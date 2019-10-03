@@ -2,22 +2,22 @@ var musicData = JSON.parse('{"meta":{"analyzer_version":"4.0.0", "platform":"Lin
 
 
 var { Timer } = require('easytimer.js');
-var express = require("express");
-var http = require("http");
-var socketIO = require("socket.io");
-
-
+var express = require('express'),
+    http = require('http');
 var app = express();
-
-app.use(express.static('public'))
-app.get("/", function(req, res){
-    //res.sendFile("D:/Software Projects Workspace/index.html");
-
-});
-
-
 var server = http.createServer(app);
-var io = socketIO.listen(server, {log: false});
+var io = require('socket.io').listen(server);
+
+
+
+app.enable('trust proxy');
+app.use(express.static('public'))
+// app.get("/softwarevisualizer", function(req, res){
+//     //res.sendFile("D:/Software Projects Workspace/index.html");
+
+// });
+
+
 io.sockets.on("connection", function(socket){
 
     
@@ -49,4 +49,4 @@ console.log("We have a total of " + musicData.tatums.length);
     });   
 });
 
-server.listen(5000);
+server.listen(8000);
