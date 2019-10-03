@@ -3,7 +3,7 @@ var request = require("request");
 
 var SpotifyWebApi = require("spotify-web-api-node");
 const app = express();
-const port = 3000;
+const port = 2500;
 
 var scopes = ["user-read-private", "user-read-email"],
     redirectUri = "http://localhost:3000/token",
