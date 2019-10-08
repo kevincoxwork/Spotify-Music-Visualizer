@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
     "",
-    "\\src"
+    "\\hypeify-client",
+    "\\hypeify-client\\public",
+    "\\hypeify-client\\src",
+    "\\hypeify-client\\src\\hypeify-components",
+    "\\hypeify-server",
+    "\\hypeify-server\\src"
   ],
+  "SelectedNode": "\\hypeify-client\\README.md",
   "PreviewInSolutionExplorer": false
 }
