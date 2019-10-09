@@ -5,5 +5,6 @@ const SERVER = "http://localhost:2500"; // development
 
 module.exports = {
   LOGIN: `${SERVER}/login`,
-  TOKEN: `${SERVER}/token`
+  TOKEN: `${SERVER}/token`,
+  SPOTDEVINFO: `${SERVER}/spotifyDeviceInfo`
 };

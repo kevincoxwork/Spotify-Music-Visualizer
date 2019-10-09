@@ -3,11 +3,13 @@ const request = require("request");
 var cors = require('cors');
 const socketIO = require('socket.io');
 const http = require('http');
+const bodyParser = require('body-parser')
 
 var SpotifyWebApi = require("spotify-web-api-node");
 
 
 const app = express();
+
 
 const allowedOrigins = ['http://localhost:3000',
                       'http://localhost:2500'];
@@ -23,6 +25,8 @@ app.use(cors({
 
 }));
 
+app.use(bodyParser.json());
+
 
 let server = http.createServer(app);
 let io = socketIO(server);
@@ -32,14 +36,15 @@ const port = 2500;
 let mapOfActiveUsers = new Map();
 
 class activeUser {
-    constructor(access_token, name, room){
+    constructor(access_token, socket, name, room){
         this.access_token = access_token;
+        this.socket = socket
         this.name = name;
         this.room = room;
     }
 }
 
-var scopes = ["user-read-private", "user-read-email"],
+var scopes = ["user-read-private", "user-read-email", "user-read-playback-state"],
     redirectUri = "http://localhost:2500/token",
     clientId = "508fba76b5c3412db876cbe71f7be4ba",
     state = "some-state-of-my-choice";
@@ -52,13 +57,16 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
+generateRoomName = () =>{
+    return Math.random().toString(36).substring(9);
+}
 
 
 io.on('connection', async (socket) => {
     console.log("connected");
-    mapOfActiveUsers.set(socket.id, new activeUser(lastAccessToken ,'', -1));
+    mapOfActiveUsers.set(socket.id, new activeUser(lastAccessToken ,socket.id, '', generateRoomName()));
     //this is where we should pass room information
-    socket.emit('connectedSuccessfully', lastAccessToken);
+    socket.emit('connectedSuccessfully', mapOfActiveUsers.get(socket.id));
 
     socket.on('disconnect', async () => {
         console.log("disconnected");
@@ -86,10 +94,32 @@ app.get("/token", async (req, res) => {
                 console.log('Something went wrong!', err);
             }
         );
+
+        // await spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE')
+        // .then(function (data) {
+        //     console.log('Artist albums', data.body);
+        // }, function (err) {
+        //     console.error(err);
+        // });
+
         res.redirect("http://localhost:3000/party");
     } catch (e) {
         console.log(e);
     }
+});
+
+app.put("/spotifyDeviceInfo", async(req, res) => {
+
+    let activeUser = mapOfActiveUsers.get(req.body.socket);
+    try{
+        await spotifyApi.refreshAccessToken();
+        let myDevices = await spotifyApi.getMyDevices();
+        res.send(myDevices.body.devices);
+    }catch(exception){
+        console.log(exception);
+    }
+
+  
 });
 
 app.get("/login", async (req, res) => {

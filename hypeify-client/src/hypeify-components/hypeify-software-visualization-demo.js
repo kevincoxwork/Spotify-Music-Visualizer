@@ -16,7 +16,7 @@ export default class VisualizationComponent extends React.PureComponent {
 
    beatReact = dataFromServer => {
         console.log(dataFromServer.duration);
-
+    
         this.setState({color: "black"})
         setTimeout(() => {
            this.setState({color: "white"})

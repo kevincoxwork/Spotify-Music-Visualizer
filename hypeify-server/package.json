@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/kevincoxwork/software-projects#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "easytimer": "^1.1.1",
     "easytimer.js": "^4.0.1",
     "express": "^4.17.1",
