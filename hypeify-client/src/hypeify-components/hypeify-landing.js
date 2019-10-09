@@ -1,6 +1,6 @@
 import React from "react";
 import { Spring, useSpring, animated } from "react-spring";
-import HypeifyWordComponent from "../hypeify-components/hypeifywordcomponent.js";
+//import HypeifyWordComponent from "../hypeify-components/hypeifywordcomponent.js";
 import "./landing.css";
 import VisualizationComponent from "./hypeify-software-visualization-demo";
 import { Button } from "@material-ui/core";
