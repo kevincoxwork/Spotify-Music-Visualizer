@@ -20,9 +20,6 @@ export default class LandingComponent extends React.PureComponent {
     if (this.state.gologin === true) {
       window.location.href = urls.LOGIN;
     }
-    if (window.location.href.indexOf("token") > -1) {
-      return <VisualizationComponent />;
-    } else {
       return (
         <header className="App-header">
           <div>
@@ -42,4 +39,3 @@ export default class LandingComponent extends React.PureComponent {
       );
     }
   }
-}

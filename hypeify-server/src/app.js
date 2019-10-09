@@ -1,5 +1,6 @@
 const express = require('express');
 const request = require("request");
+var cors = require('cors');
 const socketIO = require('socket.io');
 const http = require('http');
 
@@ -7,6 +8,22 @@ var SpotifyWebApi = require("spotify-web-api-node");
 
 
 const app = express();
+
+const allowedOrigins = ['http://localhost:3000',
+                      'http://localhost:2500'];
+app.use(cors({
+  origin: function(origin, callback){
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+
+}));
+
+
 let server = http.createServer(app);
 let io = socketIO(server);
 
@@ -35,35 +52,28 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept'
-    );
-    res.header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, DELETE');
-    next();
-});
+
 
 io.on('connection', async (socket) => {
-    mapOfActiveUsers.set(socket.id, new activeUser(null ,'', -1));
-
+    console.log("connected");
+    mapOfActiveUsers.set(socket.id, new activeUser(lastAccessToken ,'', -1));
+    //this is where we should pass room information
+    socket.emit('connectedSuccessfully', lastAccessToken);
 
     socket.on('disconnect', async () => {
+        console.log("disconnected");
         mapOfActiveUsers.delete(socket.id);
     });
 
 });
 
-
-app.get("/token", async (req, res) => {
-    let access_token = '';
-    
+let lastAccessToken;
+app.get("/token", async (req, res) => {    
     try {
        // Retrieve an access token and a refresh token
         await spotifyApi.authorizationCodeGrant(req.query.code).then(
             function (data) {
-                access_token =  data.body['access_token'];
+                lastAccessToken =  data.body['access_token'];
                 console.log('The token expires in ' + data.body['expires_in']);
                 console.log('The access token is ' + data.body['access_token']);
                 console.log('The refresh token is ' + data.body['refresh_token']);
@@ -77,7 +87,6 @@ app.get("/token", async (req, res) => {
             }
         );
         res.redirect("http://localhost:3000/party");
-       // res.send({sucessfulLogin: true, access_token: access_token});
     } catch (e) {
         console.log(e);
     }
@@ -88,4 +97,4 @@ app.get("/login", async (req, res) => {
     res.redirect(authorizeURL);
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+server.listen(port, () => console.log(`Example app listening on port ${port}!`));
