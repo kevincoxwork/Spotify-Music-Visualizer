@@ -116,6 +116,80 @@ app.put("/spotifyDeviceInfo", async(req, res) => {
     }
 });
 
+app.put("/skipTrack", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false, songInfo: {id: undefined, name: undefined, uri: undefined} });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+
+        if (req.body.skipToNext){
+            await spotifyApi.skipToNext();
+        }else{
+            await spotifyApi.skipToPrevious();
+        }
+        //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
+        await sleep(400);
+        
+        let result = await spotifyApi.getMyCurrentPlayingTrack();
+
+        res.send({sucessful: true, songInfo: {id: result.body.item.id, name: result.body.item.name, uri: result.body.item.uri} });
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+app.put("/pauseTrack", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        await spotifyApi.pause();
+        
+        res.send({sucessful: true});
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+app.put("/resumeTrack", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        await spotifyApi.play();
+        
+        res.send({sucessful: true});
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+app.put("/deviceStatus", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        let result = await spotifyApi.getMyCurrentPlaybackState();
+        console.log(result.body.is_playing);
+        res.send({sucessful: true, playback: result.body.is_playing});
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+
 app.put("/selectSong", async(req, res) => {
     let activeUser = mapOfActiveUsers.get(req.body.user.socket);
     if (activeUser.connectedDevice.id == undefined) {

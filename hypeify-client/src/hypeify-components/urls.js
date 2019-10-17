@@ -9,5 +9,9 @@ module.exports = {
   SPOTDEVINFO: `${SERVER}/spotifyDeviceInfo`,
   SPOTSELECTSONG: `${SERVER}/selectSong`,
   SPOTGETPLAYLISTS: `${SERVER}/getPlayLists`,
-  SPOTGETPLAYLISTCONTENTS: `${SERVER}/getPlayListsContents`
+  SPOTGETPLAYLISTCONTENTS: `${SERVER}/getPlayListsContents`,
+  SPOTSKIPTRACK: `${SERVER}/skipTrack`,
+  SPOTPAUSETRACK: `${SERVER}/pauseTrack`,
+  SPOTRESUMETRACK: `${SERVER}/resumeTrack`,
+  SPOTDEVSTATUS:  `${SERVER}/deviceStatus`
 };

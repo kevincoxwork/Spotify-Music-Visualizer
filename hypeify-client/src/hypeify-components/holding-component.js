@@ -7,6 +7,7 @@ import {
 
 import LandingComponent from "./hypeify-landing";
 import PartyComponent from './hypeify-party-component'
+import JoinComponent from "./join-component";
 
 const HoldingComponent = () => (
             <Router>
@@ -19,7 +20,7 @@ const HoldingComponent = () => (
                   <PartyComponent />
                 </Route>
                 <Route exact path="/join">
-                  <PartyComponent />
+                  <JoinComponent />
                 </Route>
               </Switch>
             </div>
