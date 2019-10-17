@@ -18,7 +18,9 @@ const HoldingComponent = () => (
                 <Route exact path="/party">
                   <PartyComponent />
                 </Route>
-                
+                <Route exact path="/join">
+                  <PartyComponent />
+                </Route>
               </Switch>
             </div>
           </Router>

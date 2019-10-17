@@ -6,15 +6,16 @@ const request = require('request');
 const queue = require('queue');
 const urls = require("./urls");
 
-export default class PartyComponent extends React.PureComponent {
+
+
+export default class JoinComponent extends React.PureComponent {
 
     state = {
         socket: null,
         activeUser: new activeUser(),
         deviceInfo: null,
         queue: new queue(),
-        currentPlayingSong: '',
-        userPlayLists: null
+        currentPlayingSong: ''
     }
   
 
@@ -28,45 +29,6 @@ export default class PartyComponent extends React.PureComponent {
                 body: JSON.stringify(this.state.activeUser)
             })
         this.setState({deviceInfo: await responce.json()});
-    }
-
-    async getPlayLists(){
-        let responce =  await fetch(urls.SPOTGETPLAYLISTS, {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ user: this.state.activeUser})
-        })
-        let finishedResponce = await responce.json();
-        if (finishedResponce.sucessful){
-          
-            this.setState({ userPlayLists: finishedResponce.playListInfo });
-        }else{
-            this.setState({userPlayLists: null});
-        }
-    }
-
-    async getPlaylistTracks(playlistTrackID){
-        //testing id
-        playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
-
-        let responce =  await fetch(urls.SPOTGETPLAYLISTCONTENTS, {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ playListID: playlistTrackID, user: this.state.activeUser})
-        })
-        let finishedResponce = await responce.json();
-        if (finishedResponce.sucessful){
-          
-            this.setState({ userPlayLists: finishedResponce.playListInfo });
-        }else{
-            this.setState({userPlayLists: null});
-        }
     }
 
     async selectSong(){
@@ -119,8 +81,6 @@ export default class PartyComponent extends React.PureComponent {
                 <p>Your Room Name Is: {this.state.activeUser.room}</p>
                 <button onClick={this.getSpotifyDevices.bind(this)} >Click To Get Devices</button>
                 <button onClick={this.selectSong.bind(this)} >Click To Play Selected Song</button>
-                <button onClick={this.getPlayLists.bind(this)}>Click To Get All User Playlists</button>
-                <button onClick={this.getPlaylistTracks.bind(this)}>Click To Get All Tracks From The PlayList</button>
                 <p>Logged in: Your receivedAccessToken Is {this.state.activeUser.access_token}</p>
              </div>
             { this.state.deviceInfo != undefined && (
@@ -129,7 +89,6 @@ export default class PartyComponent extends React.PureComponent {
                     <p>Device Type: {this.state.deviceInfo[0].type}</p>
                     <p>Current Volume:  {this.state.deviceInfo[0].volume_percent}</p>
                     <p>Current Playing Song is: {this.state.currentPlayingSong}</p>
-                    <p>User PlayList Data is: {JSON.stringify(this.state.userPlayLists)}</p>
                 </div>
             )
             }

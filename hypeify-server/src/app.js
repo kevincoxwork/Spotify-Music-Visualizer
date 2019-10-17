@@ -36,15 +36,16 @@ const port = 2500;
 let mapOfActiveUsers = new Map();
 
 class activeUser {
-    constructor(access_token, socket, name, room){
+    constructor(access_token, socket, name, room, device){
         this.access_token = access_token;
         this.socket = socket
         this.name = name;
-        this.room = room;
+        this.room = room
+        this.connectedDevice = device;
     }
 }
 
-var scopes = ["user-read-private", "user-read-email", "user-read-playback-state"],
+var scopes = ["user-read-private", "user-read-email", "user-read-playback-state", "user-modify-playback-state"],
     redirectUri = "http://localhost:2500/token",
     clientId = "508fba76b5c3412db876cbe71f7be4ba",
     state = "some-state-of-my-choice";
@@ -64,7 +65,7 @@ generateRoomName = () =>{
 
 io.on('connection', async (socket) => {
     console.log("connected");
-    mapOfActiveUsers.set(socket.id, new activeUser(lastAccessToken ,socket.id, '', generateRoomName()));
+    mapOfActiveUsers.set(socket.id, new activeUser(lastAccessToken ,socket.id, '', generateRoomName(), null));
     //this is where we should pass room information
     socket.emit('connectedSuccessfully', mapOfActiveUsers.get(socket.id));
 
@@ -94,14 +95,6 @@ app.get("/token", async (req, res) => {
                 console.log('Something went wrong!', err);
             }
         );
-
-        // await spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE')
-        // .then(function (data) {
-        //     console.log('Artist albums', data.body);
-        // }, function (err) {
-        //     console.error(err);
-        // });
-
         res.redirect("http://localhost:3000/party");
     } catch (e) {
         console.log(e);
@@ -114,17 +107,76 @@ app.put("/spotifyDeviceInfo", async(req, res) => {
     try{
         await spotifyApi.refreshAccessToken();
         let myDevices = await spotifyApi.getMyDevices();
+        activeUser.connectedDevice = myDevices.body.devices[0];
+        mapOfActiveUsers.set(req.body.socket, activeUser);
         res.send(myDevices.body.devices);
+
     }catch(exception){
         console.log(exception);
     }
+});
 
-  
+app.put("/selectSong", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false, songInfo: {id: undefined, name: undefined, uri: undefined} });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        await spotifyApi.play({device_id: activeUser.connectedDevice.id, uris:  [req.body.songURI]});
+        
+        //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
+        await sleep(400);
+        
+        let result = await spotifyApi.getMyCurrentPlayingTrack();
+
+        res.send({sucessful: true, songInfo: {id: result.body.item.id, name: result.body.item.name, uri: result.body.item.uri} });
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+app.put("/getPlayLists", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false, playListInfo: undefined });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        let result = await spotifyApi.getUserPlaylists();
+        res.send({sucessful: true, playListInfo: result.body.items });
+    }catch(exception){
+        console.log(exception);
+    }
+});
+
+
+app.put("/getPlayListsContents", async(req, res) => {
+    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
+    if (activeUser.connectedDevice.id == undefined) {
+        res.send({sucessful: false, playListInfo: undefined });
+    }
+
+    try{
+        await spotifyApi.refreshAccessToken();
+        let result = await spotifyApi.getPlaylistTracks(req.body.playListID);
+        res.send({sucessful: true, playListInfo: result.body.items });
+    }catch(exception){
+        console.log(exception);
+    }
 });
 
 app.get("/login", async (req, res) => {
     var authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
     res.redirect(authorizeURL);
 });
+
+function sleep(ms){
+    return new Promise(resolve=>{
+        setTimeout(resolve,ms)
+    })
+}
 
 server.listen(port, () => console.log(`Example app listening on port ${port}!`));

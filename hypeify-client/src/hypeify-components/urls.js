@@ -7,5 +7,7 @@ module.exports = {
   LOGIN: `${SERVER}/login`,
   TOKEN: `${SERVER}/token`,
   SPOTDEVINFO: `${SERVER}/spotifyDeviceInfo`,
-  SPOTSELECTSONG: `${SERVER}/selectSong`
+  SPOTSELECTSONG: `${SERVER}/selectSong`,
+  SPOTGETPLAYLISTS: `${SERVER}/getPlayLists`,
+  SPOTGETPLAYLISTCONTENTS: `${SERVER}/getPlayListsContents`
 };
