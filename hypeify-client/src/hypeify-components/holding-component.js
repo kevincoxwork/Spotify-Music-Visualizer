@@ -9,6 +9,7 @@ import LandingComponent from "./hypeify-landing";
 import PartyComponent from './hypeify-party-component'
 import JoinComponent from "./join-component";
 
+
 const HoldingComponent = () => (
             <Router>
             <div>

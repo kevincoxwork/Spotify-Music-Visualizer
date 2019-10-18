@@ -5,6 +5,8 @@ import "./landing.css";
 import VisualizationComponent from "./hypeify-software-visualization-demo";
 import { Button } from "@material-ui/core";
 import { Redirect, Router } from "react-router-dom";
+import landingVideo from '../media/stock-footage-landing.mp4'
+import Cover from 'react-video-cover';
 
 const urls = require("./urls");
 
@@ -21,12 +23,19 @@ export default class LandingComponent extends React.PureComponent {
       window.location.href = urls.LOGIN;
     }
       return (
-        <header className="App-header">
-          <div>
-            <br />
+        <body className="landingHolder">
+        <div className="video">
+            <Cover
+              videoOptions={{
+                src: landingVideo, autoPlay: true, muted: true,
+                loop: true
+              }}
+            />
+        <div className="landing">
+         
+          
             <h1>Welcome to Hypeify</h1>
-          </div>
-          <div>
+            <br />
             <Button
               onClick={this.handlelogin}
               variant="contained"
@@ -34,8 +43,10 @@ export default class LandingComponent extends React.PureComponent {
             >
               Log In!
             </Button>
+          
           </div>
-        </header>
+        </div>
+        </body>
       );
     }
   }
