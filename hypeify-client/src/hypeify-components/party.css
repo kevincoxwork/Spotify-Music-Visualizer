@@ -1,0 +1,55 @@
+@import url("https://fonts.googleapis.com/css?family=Comfortaa&display=swap");
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.sideButtons {
+  position: relative;
+  right: -90%;
+  top: 180px;
+  display: block;
+}
+
+button {
+  color: "primary";
+}
+
+.buttonText {
+  font-family: "Comfortaa", cursive;
+  font-size: 20px;
+}
+
+.headerText {
+  font-family: "Comfortaa", cursive;
+  font-size: 36px;
+}
+
+.buttonOption4 {
+  height: 120px;
+}
+
+.headerDiv {
+  font-family: "Comfortaa", cursive;
+  display: inline-block;
+  text-align: center;
+  color: white;
+}
+
+body {
+  /* Full height */
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-size: cover;
+  background-image: url("../backgroundParty.jpg");
+}
+
+.buttonPadding {
+  display: "inline-block";
+  padding: 10;
+}
