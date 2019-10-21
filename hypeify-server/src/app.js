@@ -90,6 +90,7 @@ app.get("/token", async (req, res) => {
                 // Set the access token on the API object to use it in later calls
                 spotifyApi.setAccessToken(data.body['access_token']);
                 spotifyApi.setRefreshToken(data.body['refresh_token']);
+                
             },
             function (err) {
                 console.log('Something went wrong!', err);
@@ -100,6 +101,13 @@ app.get("/token", async (req, res) => {
         console.log(e);
     }
 });
+
+ async function getAudioAnalysis (trackID) {
+    await spotifyApi.refreshAccessToken();
+    return spotifyApi.getAudioAnalysisForTrack(trackID);
+}
+
+
 
 app.put("/spotifyDeviceInfo", async(req, res) => {
 
@@ -182,8 +190,13 @@ app.put("/deviceStatus", async(req, res) => {
     try{
         await spotifyApi.refreshAccessToken();
         let result = await spotifyApi.getMyCurrentPlaybackState();
-        console.log(result.body.is_playing);
-        res.send({sucessful: true, playback: result.body.is_playing});
+
+        let songInfoObject = undefined;
+        if (result.body.is_playing) {
+            let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
+            songInfoObject = {id: currentPlayingTrack.body.item.id, name: currentPlayingTrack.body.item.name, uri: currentPlayingTrack.body.item.uri};
+        }
+        res.send({sucessful: true, playback: result.body.is_playing, songInfo: songInfoObject});
     }catch(exception){
         console.log(exception);
     }
@@ -246,6 +259,8 @@ app.get("/login", async (req, res) => {
     var authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
     res.redirect(authorizeURL);
 });
+
+
 
 function sleep(ms){
     return new Promise(resolve=>{

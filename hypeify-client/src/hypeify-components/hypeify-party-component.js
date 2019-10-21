@@ -7,8 +7,9 @@ import BackwardIcon from "../backwardicon.png";
 import { Button, Card, CardContent } from "@material-ui/core";
 import "./party.css";
 import { textAlign } from "@material-ui/system";
+import PromptDeviceComponent from "./prompt-device-component";
+import {getPlayLists, pauseCurrentTrack, resumeCurrentTrack, selectSong, getDeviceStatus, skipCurrentTrack, getPlayListsTracks} from "./common-endpoint-methods.js"
 
-const request = require("request");
 const queue = require("queue");
 const urls = require("./urls");
 
@@ -24,177 +25,50 @@ export default class PartyComponent extends React.PureComponent {
     buttonTitle: ""
   };
 
-  async getSpotifyDevices() {
-    let responce = await fetch(urls.SPOTDEVINFO, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(this.state.activeUser)
-    });
-
-    await this.getDeviceStatus();
-    this.setState({ deviceInfo: await responce.json() });
-  }
-
-  async getPlayLists() {
-    let responce = await fetch(urls.SPOTGETPLAYLISTS, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ user: this.state.activeUser })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      this.setState({ userPlayLists: finishedResponce.playListInfo });
-    } else {
-      this.setState({ userPlayLists: null });
-    }
-  }
-
-  async getPlaylistTracks(playlistTrackID) {
-    //testing id
+  async getPlayListsTracksClicked(playlistTrackID){
     playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
+    let result = await getPlayListsTracks(playlistTrackID, this.state.activeUser);
+    this.setState(result);
+  }
 
-    let responce = await fetch(urls.SPOTGETPLAYLISTCONTENTS, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        playListID: playlistTrackID,
-        user: this.state.activeUser
-      })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      this.setState({ userPlayLists: finishedResponce.playListInfo });
-    } else {
-      this.setState({ userPlayLists: null });
+  async getPlayListsClicked() {
+    let result = await getPlayLists();
+    this.setState({userPlayLists: result});
+  }
+
+  async skipCurrentTrackLeftClicked(){
+    let result = await skipCurrentTrack(false, this.state.activeUser);
+    let status = await getDeviceStatus();
+    this.setState({result});
+  }
+
+  async skipCurrentTrackRightClicked() {
+    let result = await skipCurrentTrack(true, this.state.activeUser);
+    let status = await getDeviceStatus();
+    this.setState({result, status});
+  }
+
+  async deviceStatusClicked(){
+    let result = await getDeviceStatus(this.state.activeUser);
+    this.setState(result);
+  }
+
+  async pausePlayCurrentTrackClicked() {
+    let result = null;
+    if (this.state.playbackState){
+      result = await pauseCurrentTrack(this.state.activeUser);
+    } else{
+      result = await resumeCurrentTrack(this.state.activeUser);
     }
+    this.setState(result);
   }
 
-  async pauseCurrentTrack() {
-    let responce = await fetch(urls.SPOTPAUSETRACK, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ user: this.state.activeUser })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      this.setState({ playbackState: false, playPauseButtonTitle: "Play" });
-    } else {
-      this.setState({ userPlayLists: null });
-    }
+  async selectSongClicked() {
+    let songID = `spotify:track:4DTpngLjoHj5gFxEZFeD3J`;
+    let result = await selectSong(songID, this.state.activeUser);
+    this.setState(result);
   }
-  async resumeCurrentTrack() {
-    let responce = await fetch(urls.SPOTRESUMETRACK, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ user: this.state.activeUser })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      this.setState({ playbackState: true, playPauseButtonTitle: "Pause" });
-    } else {
-      this.setState({ userPlayLists: null });
-    }
-  }
-
-  async skipCurrentTrackRight() {
-    await this.skipCurrentTrack(true);
-  }
-
-  async skipCurrentTrack(isSkipForward) {
-    if (isSkipForward !== true) isSkipForward = false;
-    let responce = await fetch(urls.SPOTSKIPTRACK, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        skipToNext: isSkipForward,
-        user: this.state.activeUser
-      })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      //only edit the queue if we are making a queue, selected song plays the song instantly so don't do this
-      await this.getDeviceStatus();
-      //edit the queue
-      // let tempQueue = this.state.queue;
-      // tempQueue.push(songTrack, finishedResponce.songInfo);
-      //set state queue -
-      this.setState({ currentPlayingSong: finishedResponce.songInfo.name });
-    } else {
-      this.setState({ currentPlayingSong: `Error: Song Cannot Be Played` });
-    }
-  }
-
-  async getDeviceStatus() {
-    let responce = await fetch(urls.SPOTDEVSTATUS, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ user: this.state.activeUser })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      let buttonTitle = "Play";
-      if (finishedResponce.playback) buttonTitle = "Pause";
-      this.setState({
-        playbackState: finishedResponce.playback,
-        playPauseButtonTitle: buttonTitle
-      });
-    } else {
-      this.setState({ currentPlayingSong: `Error: Song Cannot Be Played` });
-    }
-  }
-
-  async selectSong() {
-    //We should have this var as a parameter where we pass the id
-    let tempSong = `spotify:track:4DTpngLjoHj5gFxEZFeD3J`;
-
-    let responce = await fetch(urls.SPOTSELECTSONG, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ songURI: tempSong, user: this.state.activeUser })
-    });
-    let finishedResponce = await responce.json();
-    if (finishedResponce.sucessful) {
-      //only edit the queue if we are making a queue, selected song plays the song instantly so don't do this
-
-      //edit the queue
-      // let tempQueue = this.state.queue;
-      // tempQueue.push(songTrack, finishedResponce.songInfo);
-      //set state queue -
-      this.setState({ currentPlayingSong: finishedResponce.songInfo.name });
-    } else {
-      this.setState({ currentPlayingSong: `Error: Song Cannot Be Played` });
-    }
-  }
-
-  async pausePlayCurrentTrack() {
-    if (this.state.playbackState) await this.pauseCurrentTrack();
-    else await this.resumeCurrentTrack();
-  }
-
+  
   componentDidMount = () => {
     // connect to server
     const socket = io.connect("http://localhost:2500");
@@ -206,6 +80,11 @@ export default class PartyComponent extends React.PureComponent {
 
   connectedSuccessfully = dataFromServer => {
     this.setState({ activeUser: dataFromServer });
+  };
+
+  deviceSelected = passedDeviceInfo => {
+    this.deviceStatusClicked();
+    this.setState({deviceInfo: passedDeviceInfo});
   };
 
   render() {
@@ -221,6 +100,9 @@ export default class PartyComponent extends React.PureComponent {
               {this.state.activeUser.access_token}
             </p>
           </div>
+          {this.state.deviceInfo ===  null && 
+            <PromptDeviceComponent active_user={this.state.activeUser}  callbackToParent={this.deviceSelected}></PromptDeviceComponent>
+          }
           <Card style={{ width: "80%" }}>
             <CardContent
               style={{ textAlign: "center", backgroundColor: "Black" }}
@@ -228,13 +110,13 @@ export default class PartyComponent extends React.PureComponent {
               {this.state.deviceInfo != undefined && (
                 <div>
                   <p className="buttonText">
-                    Device Name: {this.state.deviceInfo[0].name}
+                    Device Name: {this.state.deviceInfo.name}
                   </p>
                   <p className="buttonText">
-                    Device Type: {this.state.deviceInfo[0].type}
+                    Device Type: {this.state.deviceInfo.type}
                   </p>
                   <p className="buttonText">
-                    Current Volume: {this.state.deviceInfo[0].volume_percent}
+                    Current Volume: {this.state.deviceInfo.volume_percent}
                   </p>
                   <p className="buttonText">
                     Current Song is: {this.state.currentPlayingSong}
@@ -256,7 +138,7 @@ export default class PartyComponent extends React.PureComponent {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={this.getSpotifyDevices.bind(this)}
+                //onClick={this.getSpotifyDevices.bind(this)}
               >
                 <span className="buttonText">Click To Get Devices</span>
               </Button>
@@ -266,7 +148,7 @@ export default class PartyComponent extends React.PureComponent {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={this.selectSong.bind(this)}
+                onClick={this.selectSongClicked.bind(this)}
               >
                 <span className="buttonText">Click To Play Selected Song</span>
               </Button>
@@ -276,7 +158,7 @@ export default class PartyComponent extends React.PureComponent {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={this.getPlayLists.bind(this)}
+                onClick={this.getPlayListsClicked.bind(this)}
               >
                 <span className="buttonText">
                   {" "}
@@ -290,7 +172,7 @@ export default class PartyComponent extends React.PureComponent {
                 variant="contained"
                 color="primary"
                 className="buttonOption4"
-                onClick={this.getPlaylistTracks.bind(this)}
+                onClick={this.getPlayListsTracksClicked.bind(this)}
               >
                 <span className="buttonText">
                   Click To Get All Tracks From The PlayList
@@ -305,7 +187,7 @@ export default class PartyComponent extends React.PureComponent {
               variant="contained"
               color="primary"
               className="buttonPadding"
-              onClick={this.skipCurrentTrack.bind(this)}
+              onClick={this.skipCurrentTrackLeftClicked.bind(this)}
             >
               <img src={BackwardIcon} width="100" height="75"></img>
             </Button>
@@ -313,7 +195,7 @@ export default class PartyComponent extends React.PureComponent {
               variant="contained"
               color="primary"
               className="buttonPadding"
-              onClick={this.pausePlayCurrentTrack.bind(this)}
+              onClick={this.pausePlayCurrentTrackClicked.bind(this)}
             >
               <img width="100" height="75" src={PlayPauseIcon}></img>
             </Button>
@@ -321,7 +203,7 @@ export default class PartyComponent extends React.PureComponent {
               variant="contained"
               color="primary"
               className="buttonPadding"
-              onClick={this.skipCurrentTrackRight.bind(this)}
+              onClick={this.skipCurrentTrackRightClicked.bind(this)}
             >
               <img src={FastForwardIcon} width="100" height="75"></img>
             </Button>
