@@ -1,11 +1,10 @@
 
 class activeUser {
-    constructor(access_token, socket, name, room, device){
+    constructor(access_token, socket, name, room){
         this.access_token = access_token;
         this.socket = socket
         this.name = name;
         this.room = room
-        this.connectedDevice = device;
     }
 }
 

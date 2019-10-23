@@ -1,11 +1,11 @@
 const express = require('express');
 const request = require("request");
-var cors = require('cors');
+const cors = require('cors');
+const {Timer} = require('easytimer.js');
 const socketIO = require('socket.io');
 const http = require('http');
-const bodyParser = require('body-parser')
-
-var SpotifyWebApi = require("spotify-web-api-node");
+const bodyParser = require('body-parser');
+const SpotifyWebApi = require("spotify-web-api-node");
 
 
 const app = express();
@@ -102,9 +102,50 @@ app.get("/token", async (req, res) => {
     }
 });
 
- async function getAudioAnalysis (trackID) {
-    await spotifyApi.refreshAccessToken();
-    return spotifyApi.getAudioAnalysisForTrack(trackID);
+ async function getAudioAnalysis (trackURI) {
+
+
+    tokens = trackURI.split(':').slice(2),
+    trackURI = tokens.join('.');
+
+    let result = await spotifyApi.getAudioAnalysisForTrack(trackURI);
+
+    return result;
+}
+
+let timer;
+async function visualizeMusic(musicData){
+
+    timer = new Timer();
+    timer.start({precision: 'secondTenths'});
+
+    musicData = musicData.body;
+
+    timer.addEventListener('secondTenthsUpdated', function (e) {
+       
+        if (timer.getTotalTimeValues().secondTenths >= musicData.beats[0].start * 10){
+            if (musicData.beats[0].confidence >= 0.2 && musicData.beats[0].duration >= 0.1 ) {
+                console.log("Emiting at " + musicData.beats[0].start + " my local time is " + timer.getTotalTimeValues().secondTenths.toString());
+                // if (musicData.tatums[0].duration >0.3){
+                //     musicData.tatums[0].color = "green";
+                // }else{
+                //     musicData.tatums[0].color = "blue";
+                // }
+                // //socket.emit("beat", musicData.tatums[0]);
+                // console.log(musicData.tatums[0]);
+           }
+           
+            musicData.beats.shift(); 
+        }
+        if (timer.getTimeValues().seconds > musicData.track.duration){
+            console.log("Done the song!")
+            return;
+        }
+    });   
+}
+
+async function stopVisualingMusic(){
+    //timer.removeEventListener('secondTenthsUpdated', function(e){});
 }
 
 
@@ -125,11 +166,6 @@ app.put("/spotifyDeviceInfo", async(req, res) => {
 });
 
 app.put("/skipTrack", async(req, res) => {
-    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
-    if (activeUser.connectedDevice.id == undefined) {
-        res.send({sucessful: false, songInfo: {id: undefined, name: undefined, uri: undefined} });
-    }
-
     try{
         await spotifyApi.refreshAccessToken();
 
@@ -138,6 +174,7 @@ app.put("/skipTrack", async(req, res) => {
         }else{
             await spotifyApi.skipToPrevious();
         }
+        await stopVisualingMusic();
         //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
         await sleep(400);
         
@@ -158,6 +195,7 @@ app.put("/pauseTrack", async(req, res) => {
     try{
         await spotifyApi.refreshAccessToken();
         await spotifyApi.pause();
+        await stopVisualingMusic();
         
         res.send({sucessful: true});
     }catch(exception){
@@ -173,6 +211,7 @@ app.put("/resumeTrack", async(req, res) => {
 
     try{
         await spotifyApi.refreshAccessToken();
+        //await visualizeMusic();
         await spotifyApi.play();
         
         res.send({sucessful: true});
@@ -182,11 +221,6 @@ app.put("/resumeTrack", async(req, res) => {
 });
 
 app.put("/deviceStatus", async(req, res) => {
-    let activeUser = mapOfActiveUsers.get(req.body.user.socket);
-    if (activeUser.connectedDevice.id == undefined) {
-        res.send({sucessful: false });
-    }
-
     try{
         await spotifyApi.refreshAccessToken();
         let result = await spotifyApi.getMyCurrentPlaybackState();
@@ -211,12 +245,19 @@ app.put("/selectSong", async(req, res) => {
 
     try{
         await spotifyApi.refreshAccessToken();
+
+        let visualizationData = await getAudioAnalysis(req.body.songURI);
+
         await spotifyApi.play({device_id: activeUser.connectedDevice.id, uris:  [req.body.songURI]});
         
+        visualizeMusic(visualizationData);
+
         //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
         await sleep(400);
         
         let result = await spotifyApi.getMyCurrentPlayingTrack();
+
+        
 
         res.send({sucessful: true, songInfo: {id: result.body.item.id, name: result.body.item.name, uri: result.body.item.uri} });
     }catch(exception){
@@ -259,6 +300,8 @@ app.get("/login", async (req, res) => {
     var authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
     res.redirect(authorizeURL);
 });
+
+
 
 
 

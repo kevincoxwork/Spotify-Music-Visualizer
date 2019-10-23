@@ -121,18 +121,18 @@ module.exports.selectSong = async function selectSong(songID, activeUser) {
 }
 
 module.exports.getDeviceStatus = async function getDeviceStatus(activeUser) {
+
+    
     let responce = await fetch(urls.SPOTDEVSTATUS, {
         method: "PUT",
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            user: activeUser
-        })
+        body: JSON.stringify(activeUser)
     });
     let finishedResponce = await responce.json();
-    console.log(finishedResponce);
+    
     if (finishedResponce.sucessful) {
         let buttonTitle = "Play";
         let currentTitle = "No Song Is Currently Being Played"

@@ -38,14 +38,14 @@ export default class PartyComponent extends React.PureComponent {
 
   async skipCurrentTrackLeftClicked(){
     let result = await skipCurrentTrack(false, this.state.activeUser);
-    let status = await getDeviceStatus();
-    this.setState({result});
+    let status = await getDeviceStatus(this.state.activeUser);
+    this.setState(status);
   }
 
   async skipCurrentTrackRightClicked() {
     let result = await skipCurrentTrack(true, this.state.activeUser);
-    let status = await getDeviceStatus();
-    this.setState({result, status});
+    let status = await getDeviceStatus(this.state.activeUser);
+    this.setState(status);
   }
 
   async deviceStatusClicked(){
@@ -56,15 +56,17 @@ export default class PartyComponent extends React.PureComponent {
   async pausePlayCurrentTrackClicked() {
     let result = null;
     if (this.state.playbackState){
-      result = await pauseCurrentTrack(this.state.activeUser);
+      await pauseCurrentTrack(this.state.activeUser);
     } else{
-      result = await resumeCurrentTrack(this.state.activeUser);
+      await resumeCurrentTrack(this.state.activeUser);
     }
+    result = await getDeviceStatus(this.state.activeUser);
     this.setState(result);
   }
 
   async selectSongClicked() {
     let songID = `spotify:track:4DTpngLjoHj5gFxEZFeD3J`;
+
     let result = await selectSong(songID, this.state.activeUser);
     this.setState(result);
   }
@@ -74,9 +76,14 @@ export default class PartyComponent extends React.PureComponent {
     const socket = io.connect("http://localhost:2500");
 
     socket.on("connectedSuccessfully", this.connectedSuccessfully);
+    socket.on("disconnect", this.socketDisconnect);
 
     this.setState({ socket: socket });
   };
+
+  socketDisconnect = dataFromServer => {
+
+  }
 
   connectedSuccessfully = dataFromServer => {
     this.setState({ activeUser: dataFromServer });
