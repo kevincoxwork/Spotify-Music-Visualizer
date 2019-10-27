@@ -8,7 +8,17 @@ import { Button, Card, CardContent } from "@material-ui/core";
 import "./party.css";
 import { textAlign } from "@material-ui/system";
 import PromptDeviceComponent from "./prompt-device-component";
-import {getPlayLists, pauseCurrentTrack, resumeCurrentTrack, selectSong, getDeviceStatus, skipCurrentTrack, getPlayListsTracks} from "./common-endpoint-methods.js"
+import {
+  getPlayLists,
+  pauseCurrentTrack,
+  resumeCurrentTrack,
+  selectSong,
+  getDeviceStatus,
+  skipCurrentTrack,
+  getPlayListsTracks,
+  seekBack,
+  seekForward
+} from "./common-endpoint-methods.js";
 
 const queue = require("queue");
 const urls = require("./urls");
@@ -25,18 +35,25 @@ export default class PartyComponent extends React.PureComponent {
     buttonTitle: ""
   };
 
-  async getPlayListsTracksClicked(playlistTrackID){
-    playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
-    let result = await getPlayListsTracks(playlistTrackID, this.state.activeUser);
+  async getPlayListsTracksClicked(playlistTrackID) {
+    playlistTrackID = "6euMPZz8wRBQBf9U2W91Xw";
+    let result = await getPlayListsTracks(
+      playlistTrackID,
+      this.state.activeUser
+    );
     this.setState(result);
   }
 
   async getPlayListsClicked() {
     let result = await getPlayLists();
-    this.setState({userPlayLists: result});
+    this.setState({ userPlayLists: result });
   }
 
-  async skipCurrentTrackLeftClicked(){
+  // async skipSongInPlaylist({
+
+  // })
+
+  async skipCurrentTrackLeftClicked() {
     let result = await skipCurrentTrack(false, this.state.activeUser);
     let status = await getDeviceStatus(this.state.activeUser);
     this.setState(status);
@@ -48,16 +65,24 @@ export default class PartyComponent extends React.PureComponent {
     this.setState(status);
   }
 
-  async deviceStatusClicked(){
+  async deviceStatusClicked() {
     let result = await getDeviceStatus(this.state.activeUser);
     this.setState(result);
   }
 
+  async seekTrackForward() {
+    await seekForward();
+  }
+
+  async seekTrackBack() {
+    await seekBack();
+  }
+
   async pausePlayCurrentTrackClicked() {
     let result = null;
-    if (this.state.playbackState){
+    if (this.state.playbackState) {
       await pauseCurrentTrack(this.state.activeUser);
-    } else{
+    } else {
       await resumeCurrentTrack(this.state.activeUser);
     }
     result = await getDeviceStatus(this.state.activeUser);
@@ -70,7 +95,7 @@ export default class PartyComponent extends React.PureComponent {
     let result = await selectSong(songID, this.state.activeUser);
     this.setState(result);
   }
-  
+
   componentDidMount = () => {
     // connect to server
     const socket = io.connect("http://localhost:2500");
@@ -81,9 +106,7 @@ export default class PartyComponent extends React.PureComponent {
     this.setState({ socket: socket });
   };
 
-  socketDisconnect = dataFromServer => {
-
-  }
+  socketDisconnect = dataFromServer => {};
 
   connectedSuccessfully = dataFromServer => {
     this.setState({ activeUser: dataFromServer });
@@ -91,7 +114,7 @@ export default class PartyComponent extends React.PureComponent {
 
   deviceSelected = passedDeviceInfo => {
     this.deviceStatusClicked();
-    this.setState({deviceInfo: passedDeviceInfo});
+    this.setState({ deviceInfo: passedDeviceInfo });
   };
 
   render() {
@@ -107,9 +130,12 @@ export default class PartyComponent extends React.PureComponent {
               {this.state.activeUser.access_token}
             </p>
           </div>
-          {this.state.deviceInfo ===  null && 
-            <PromptDeviceComponent active_user={this.state.activeUser}  callbackToParent={this.deviceSelected}></PromptDeviceComponent>
-          }
+          {this.state.deviceInfo === null && (
+            <PromptDeviceComponent
+              active_user={this.state.activeUser}
+              callbackToParent={this.deviceSelected}
+            ></PromptDeviceComponent>
+          )}
           <Card style={{ width: "80%" }}>
             <CardContent
               style={{ textAlign: "center", backgroundColor: "Black" }}
@@ -162,13 +188,18 @@ export default class PartyComponent extends React.PureComponent {
             </div>
             <br />
             <div>
+              <Button variant="contained" color="primary">
+                <span className="buttonText">Skip Song</span>
+              </Button>
+            </div>
+            <br />
+            <div>
               <Button
                 variant="contained"
                 color="primary"
                 onClick={this.getPlayListsClicked.bind(this)}
               >
                 <span className="buttonText">
-                  {" "}
                   Click To Get All User Playlists
                 </span>
               </Button>
@@ -189,6 +220,24 @@ export default class PartyComponent extends React.PureComponent {
           </div>
 
           <br />
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              className="buttonPadding"
+              onClick={this.seekTrackBack.bind(this)}
+            >
+              <span className="buttonText">Seek Back</span>
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              className="buttonPadding"
+              onClick={this.seekTrackForward.bind(this)}
+            >
+              <span className="buttonText">Seek Forward</span>
+            </Button>
+          </div>
           <div className="footer">
             <Button
               variant="contained"

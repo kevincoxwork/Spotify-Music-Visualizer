@@ -13,5 +13,7 @@ module.exports = {
   SPOTSKIPTRACK: `${SERVER}/skipTrack`,
   SPOTPAUSETRACK: `${SERVER}/pauseTrack`,
   SPOTRESUMETRACK: `${SERVER}/resumeTrack`,
-  SPOTDEVSTATUS:  `${SERVER}/deviceStatus`
+  SPOTDEVSTATUS: `${SERVER}/deviceStatus`,
+  SPOTSEEKFORWARD: `${SERVER}/seekForward`,
+  SPOTSEEKBACK: `${SERVER}/seekBack`
 };

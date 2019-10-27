@@ -53,3 +53,7 @@ body {
   display: "inline-block";
   padding: 10;
 }
+
+p {
+  color: white;
+}
