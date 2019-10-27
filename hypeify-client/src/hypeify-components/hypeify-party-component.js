@@ -49,10 +49,6 @@ export default class PartyComponent extends React.PureComponent {
     this.setState({ userPlayLists: result });
   }
 
-  // async skipSongInPlaylist({
-
-  // })
-
   async skipCurrentTrackLeftClicked() {
     let result = await skipCurrentTrack(false, this.state.activeUser);
     let status = await getDeviceStatus(this.state.activeUser);
