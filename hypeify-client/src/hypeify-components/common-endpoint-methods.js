@@ -41,6 +41,18 @@ module.exports.getPlayLists = async function getPlayLists(activeUser) {
   }
 };
 
+module.exports.seekBack = async function seekBack() {
+  let reponse = await fetch(urls.SPOTSEEKBACK, {
+    method: "PUT",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({})
+  });
+  let finishedResponse = await reponse.json();
+};
+
 module.exports.seekForward = async function seekForward() {
   let response = await fetch(urls.SPOTSEEKFORWARD, {
     method: "PUT",
