@@ -15,6 +15,7 @@ import {
 } from "@material-ui/core";
 import ComputerIcon from "@material-ui/icons/Computer";
 import PhoneAndroidIcon from "@material-ui/icons/PhoneAndroid";
+import "../hypeify-components/party.css";
 const urls = require("./urls");
 
 export default class PromptDeviceComponent extends React.PureComponent {
@@ -84,7 +85,11 @@ export default class PromptDeviceComponent extends React.PureComponent {
 
   render() {
     return (
-      <Dialog open={this.state.dialogOpen} onClose={this.handleClose}>
+      <Dialog
+        className="responsePromptPhone"
+        open={this.state.dialogOpen}
+        onClose={this.handleClose}
+      >
         <DialogTitle>{"Select An Active Spotify Device"}</DialogTitle>
         <DialogContent>
           <Grid

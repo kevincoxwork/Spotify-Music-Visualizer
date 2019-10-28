@@ -132,9 +132,12 @@ export default class PartyComponent extends React.PureComponent {
               callbackToParent={this.deviceSelected}
             ></PromptDeviceComponent>
           )}
-          <Card style={{ width: "80%" }}>
+          <Card style={{ width: "80%", backgroundColor: "Black" }}>
             <CardContent
-              style={{ textAlign: "center", backgroundColor: "Black" }}
+              style={{
+                textAlign: "center",
+                backgroundColor: "Black"
+              }}
             >
               {this.state.deviceInfo != undefined && (
                 <div>
@@ -184,12 +187,6 @@ export default class PartyComponent extends React.PureComponent {
             </div>
             <br />
             <div>
-              <Button variant="contained" color="primary">
-                <span className="buttonText">Skip Song</span>
-              </Button>
-            </div>
-            <br />
-            <div>
               <Button
                 variant="contained"
                 color="primary"
@@ -214,13 +211,12 @@ export default class PartyComponent extends React.PureComponent {
               </Button>
             </div>
           </div>
-
           <br />
-          <div>
+          <br />
+          <div className="seekButtons">
             <Button
               variant="contained"
               color="primary"
-              className="buttonPadding"
               onClick={this.seekTrackBack.bind(this)}
             >
               <span className="buttonText">Seek Back</span>
@@ -228,37 +224,42 @@ export default class PartyComponent extends React.PureComponent {
             <Button
               variant="contained"
               color="primary"
-              className="buttonPadding"
               onClick={this.seekTrackForward.bind(this)}
             >
               <span className="buttonText">Seek Forward</span>
             </Button>
           </div>
           <div className="footer">
-            <Button
-              variant="contained"
-              color="primary"
-              className="buttonPadding"
-              onClick={this.skipCurrentTrackLeftClicked.bind(this)}
-            >
-              <img src={BackwardIcon} width="100" height="75"></img>
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              className="buttonPadding"
-              onClick={this.pausePlayCurrentTrackClicked.bind(this)}
-            >
-              <img width="100" height="75" src={PlayPauseIcon}></img>
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              className="buttonPadding"
-              onClick={this.skipCurrentTrackRightClicked.bind(this)}
-            >
-              <img src={FastForwardIcon} width="100" height="75"></img>
-            </Button>
+            <div className="leftButton">
+              <Button
+                variant="contained"
+                color="primary"
+                className="playerButtons"
+                onClick={this.skipCurrentTrackLeftClicked.bind(this)}
+              >
+                <img className="imageResponse" src={BackwardIcon}></img>
+              </Button>
+            </div>
+            <div className="centerButton">
+              <Button
+                variant="contained"
+                color="primary"
+                className="playerButtons"
+                onClick={this.pausePlayCurrentTrackClicked.bind(this)}
+              >
+                <img className="imageResponse" src={PlayPauseIcon}></img>
+              </Button>
+            </div>
+            <div style={{ paddingLeft: 1000 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                className="playerButtons"
+                onClick={this.skipCurrentTrackRightClicked.bind(this)}
+              >
+                <img className="imageResponse" src={FastForwardIcon}></img>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

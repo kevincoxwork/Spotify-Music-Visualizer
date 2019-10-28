@@ -1,59 +1,147 @@
 @import url("https://fonts.googleapis.com/css?family=Comfortaa&display=swap");
 
-.footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
+@media only screen and (min-width: 701px) {
+  .footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    align-items: center;
+    display: inline-flex;
+  }
+
+  .sideButtons {
+    position: relative;
+    right: -85%;
+    top: -300px;
+    display: block;
+  }
+
+  button {
+    color: "primary";
+  }
+
+  .buttonText {
+    font-family: "Comfortaa", cursive;
+    font-size: 20px;
+  }
+
+  .rightButton {
+    margin-left: 100px;
+  }
+
+  .centerButton {
+    margin-left: 100px;
+  }
+
+  .leftButton {
+    margin-left: 100px;
+  }
+
+  .headerText {
+    font-family: "Comfortaa", cursive;
+    font-size: 36px;
+  }
+
+  .buttonOption4 {
+    height: 120px;
+  }
+
+  .imageResponse {
+    width: 100px;
+    height: 75px;
+  }
+
+  .playerButtons {
+    width: 150%;
+    margin: 10px 10px 10px 10px;
+  }
+
+  .seekButtons {
+    position: relative;
+    top: -300px;
+  }
+
+  .headerDiv {
+    font-family: "Comfortaa", cursive;
+    display: inline-block;
+    text-align: center;
+    color: white;
+  }
+
+  body {
+    /* Full height */
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-size: cover;
+    background-image: url("../backgroundParty.jpg");
+  }
+
+  .buttonPadding {
+    display: inline-flex;
+    padding: 0;
+  }
+
+  p {
+    color: white;
+  }
 }
+@media only screen and (max-width: 700px) {
+  body {
+    background-position: center;
+    background-size: cover;
+    background-image: url("../backgroundParty.jpg");
+  }
 
-.sideButtons {
-  position: relative;
-  right: -90%;
-  top: 180px;
-  display: block;
-}
+  .headerDiv {
+    text-align: left;
+  }
 
-button {
-  color: "primary";
-}
+  .headerText {
+    font-size: 12px;
+    color: white;
+  }
 
-.buttonText {
-  font-family: "Comfortaa", cursive;
-  font-size: 20px;
-}
+  .buttonPadding {
+    display: "flex";
+    padding-top: 5px;
+  }
 
-.headerText {
-  font-family: "Comfortaa", cursive;
-  font-size: 36px;
-}
+  p {
+    font-size: small;
+    width: 80%;
+    padding-left: 5px;
+    color: white;
+  }
 
-.buttonOption4 {
-  height: 120px;
-}
+  .buttonText {
+    font-family: "Comfortaa", cursive;
+    font-size: 10px;
+  }
 
-.headerDiv {
-  font-family: "Comfortaa", cursive;
-  display: inline-block;
-  text-align: center;
-  color: white;
-}
+  .sideButtons {
+    position: relative;
+    right: -10%;
+    top: 20px;
+    display: inline-flex;
+  }
 
-body {
-  /* Full height */
+  .footer {
+    position: absolute;
+    left: 0;
+    bottom: 10;
+    width: 100%;
+    text-align: left;
+    display: flex;
+  }
 
-  /* Center and scale the image nicely */
-  background-position: center;
-  background-size: cover;
-  background-image: url("../backgroundParty.jpg");
-}
+  .imageResponse {
+    width: 30px;
+    height: 30px;
+  }
 
-.buttonPadding {
-  display: "inline-block";
-  padding: 10;
-}
-
-p {
-  color: white;
+  .responsePromptPhone {
+    align-content: flex-end;
+  }
 }
