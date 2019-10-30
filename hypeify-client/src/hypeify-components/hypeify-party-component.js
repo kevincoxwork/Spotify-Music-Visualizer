@@ -86,7 +86,7 @@ export default class PartyComponent extends React.PureComponent {
   }
 
   async selectSongClicked() {
-    let songID = `spotify:track:4DTpngLjoHj5gFxEZFeD3J`;
+    let songID = `spotify:track:5tf1VVWniHgryyumXyJM7w`;
 
     let result = await selectSong(songID, this.state.activeUser);
     this.setState(result);

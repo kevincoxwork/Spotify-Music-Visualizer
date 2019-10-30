@@ -1,7 +1,9 @@
 const express = require("express");
 const request = require("request");
 const cors = require("cors");
-const { Timer } = require("easytimer.js");
+const {
+  Timer
+} = require("easytimer.js");
 const socketIO = require("socket.io");
 const http = require("http");
 const bodyParser = require("body-parser");
@@ -12,7 +14,7 @@ const app = express();
 const allowedOrigins = ["http://localhost:3000", "http://localhost:2500"];
 app.use(
   cors({
-    origin: function(origin, callback) {
+    origin: function (origin, callback) {
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
@@ -86,7 +88,7 @@ app.get("/token", async (req, res) => {
   try {
     // Retrieve an access token and a refresh token
     await spotifyApi.authorizationCodeGrant(req.query.code).then(
-      function(data) {
+      function (data) {
         lastAccessToken = data.body["access_token"];
         console.log("The token expires in " + data.body["expires_in"]);
         console.log("The access token is " + data.body["access_token"]);
@@ -96,7 +98,7 @@ app.get("/token", async (req, res) => {
         spotifyApi.setAccessToken(data.body["access_token"]);
         spotifyApi.setRefreshToken(data.body["refresh_token"]);
       },
-      function(err) {
+      function (err) {
         console.log("Something went wrong!", err);
       }
     );
@@ -114,48 +116,75 @@ async function getAudioAnalysis(trackURI) {
 }
 
 let timer;
-async function visualizeMusic(musicData) {
+let savedmusicData;
+async function visualizeMusic(musicData, startTime) {
+
+  if (timer !== undefined) {
+    timer.removeEventListener("secondTenthsUpdated", secondTenthsUpdated);
+  }
+
   timer = new Timer();
-  timer.start({ precision: "secondTenths" });
-
-  musicData = musicData.body;
-
-  timer.addEventListener("secondTenthsUpdated", function(e) {
-    if (
-      timer.getTotalTimeValues().secondTenths >=
-      musicData.beats[0].start * 10
-    ) {
-      if (
-        musicData.beats[0].confidence >= 0.2 &&
-        musicData.beats[0].duration >= 0.1
-      ) {
-        console.log(
-          "Emiting at " +
-            musicData.beats[0].start +
-            " my local time is " +
-            timer.getTotalTimeValues().secondTenths.toString()
-        );
-        // if (musicData.tatums[0].duration >0.3){
-        //     musicData.tatums[0].color = "green";
-        // }else{
-        //     musicData.tatums[0].color = "blue";
-        // }
-        // //socket.emit("beat", musicData.tatums[0]);
-        // console.log(musicData.tatums[0]);
-      }
-
-      musicData.beats.shift();
-    }
-    if (timer.getTimeValues().seconds > musicData.track.duration) {
-      console.log("Done the song!");
-      return;
+  timer.start({
+    precision: "secondTenths",
+    startValues: {
+      secondTenths: startTime / 100
     }
   });
+
+  if (musicData !== undefined)
+    savedmusicData = musicData.body;
+
+  timer.addEventListener("secondTenthsUpdated", secondTenthsUpdated);
 }
 
-async function stopVisualingMusic() {
-  //timer.removeEventListener('secondTenthsUpdated', function(e){});
+function secondTenthsUpdated() {
+  if (
+    timer.getTotalTimeValues().secondTenths >=
+    savedmusicData.beats[0].start * 10
+  ) {
+    if (
+      savedmusicData.beats[0].confidence >= 0.2 &&
+      savedmusicData.beats[0].duration >= 0.1
+    ) {
+      console.log(
+        "Emiting at " +
+        savedmusicData.beats[0].start +
+        " my local time is " +
+        timer.getTotalTimeValues().secondTenths.toString()
+      );
+      // if (musicData.tatums[0].duration >0.3){
+      //     musicData.tatums[0].color = "green";
+      // }else{
+      //     musicData.tatums[0].color = "blue";
+      // }
+      // //socket.emit("beat", musicData.tatums[0]);
+      // console.log(musicData.tatums[0]);
+    }
+
+    savedmusicData.beats.shift();
+  }
+  if (timer.getTimeValues().seconds > savedmusicData.track.duration) {
+    console.log("Done the song!");
+    return;
+  }
 }
+
+async function resumeVisualzingMusic() {
+
+  if (timer !== undefined) {
+    timer.start();
+  }
+
+}
+
+async function pauseVisualingMusic() {
+  if (timer !== undefined) {
+    timer.pause();
+  }
+
+
+}
+
 
 app.put("/spotifyDeviceInfo", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.socket);
@@ -179,7 +208,7 @@ app.put("/skipTrack", async (req, res) => {
     } else {
       await spotifyApi.skipToPrevious();
     }
-    await stopVisualingMusic();
+    await pauseVisualingMusic();
     //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
     await sleep(400);
 
@@ -199,6 +228,10 @@ app.put("/skipTrack", async (req, res) => {
 });
 
 app.put("/seekForward", async (req, res) => {
+
+  //get this from the request
+  const timeToSkipAheadBy = 1000;
+
   try {
     await spotifyApi.refreshAccessToken();
     let progress = undefined;
@@ -208,15 +241,23 @@ app.put("/seekForward", async (req, res) => {
       duration: currentPlayingTrack.body.item.duration_ms
     };
     let skip = false;
-    let newTime = progress.time + 1000;
+    let newTime = progress.time + timeToSkipAheadBy;
+
+    //update visulization with advancement in time
+    await visualizeMusic(undefined, newTime);
+
     await spotifyApi.seek(newTime);
-    res.send({ sucessful: true });
+    res.send({
+      sucessful: true
+    });
   } catch (exception) {
     console.log(exception);
   }
 });
 
 app.put("/seekBack", async (req, res) => {
+  //get this from the request
+  const timeToSkipBehindBy = 1000;
   try {
     await spotifyApi.refreshAccessToken();
     let progress = undefined;
@@ -226,9 +267,12 @@ app.put("/seekBack", async (req, res) => {
       duration: currentPlayingTrack.body.item.duration_ms
     };
     let skip = false;
-    let newTime = progress.time - 1000;
+    let newTime = progress.time - timeToSkipBehindBy;
+    await visualizeMusic(undefined, newTime);
     await spotifyApi.seek(newTime);
-    res.send({ sucessful: true });
+    res.send({
+      sucessful: true
+    });
   } catch (exception) {
     console.log(exception);
   }
@@ -237,15 +281,19 @@ app.put("/seekBack", async (req, res) => {
 app.put("/pauseTrack", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.user.socket);
   if (activeUser.connectedDevice.id == undefined) {
-    res.send({ sucessful: false });
+    res.send({
+      sucessful: false
+    });
   }
 
   try {
     await spotifyApi.refreshAccessToken();
     await spotifyApi.pause();
-    await stopVisualingMusic();
+    await pauseVisualingMusic();
 
-    res.send({ sucessful: true });
+    res.send({
+      sucessful: true
+    });
   } catch (exception) {
     console.log(exception);
   }
@@ -254,14 +302,18 @@ app.put("/pauseTrack", async (req, res) => {
 app.put("/resumeTrack", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.user.socket);
   if (activeUser.connectedDevice.id == undefined) {
-    res.send({ sucessful: false });
+    res.send({
+      sucessful: false
+    });
   }
   try {
     await spotifyApi.refreshAccessToken();
-    //await visualizeMusic();
+    await resumeVisualzingMusic();
     await spotifyApi.play();
 
-    res.send({ sucessful: true });
+    res.send({
+      sucessful: true
+    });
   } catch (exception) {
     console.log(exception);
   }
@@ -279,6 +331,13 @@ app.put("/deviceStatus", async (req, res) => {
         name: currentPlayingTrack.body.item.name,
         uri: currentPlayingTrack.body.item.uri
       };
+
+      await spotifyApi.pause();
+      
+      let visualizationData = await getAudioAnalysis(currentPlayingTrack.body.item.uri);
+      await visualizeMusic(visualizationData, currentPlayingTrack.body.progress_ms);
+
+      await spotifyApi.play();
     }
     res.send({
       sucessful: true,
@@ -295,7 +354,11 @@ app.put("/selectSong", async (req, res) => {
   if (activeUser.connectedDevice.id == undefined) {
     res.send({
       sucessful: false,
-      songInfo: { id: undefined, name: undefined, uri: undefined }
+      songInfo: {
+        id: undefined,
+        name: undefined,
+        uri: undefined
+      }
     });
   }
 
@@ -309,7 +372,7 @@ app.put("/selectSong", async (req, res) => {
       uris: [req.body.songURI]
     });
 
-    visualizeMusic(visualizationData);
+    await visualizeMusic(visualizationData, 0);
 
     //The getcurrentPlayingTrack is too quick and may get the last playing song. We must wait for the previous request to go through
     await sleep(400);
@@ -332,13 +395,19 @@ app.put("/selectSong", async (req, res) => {
 app.put("/getPlayLists", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.user.socket);
   if (activeUser.connectedDevice.id == undefined) {
-    res.send({ sucessful: false, playListInfo: undefined });
+    res.send({
+      sucessful: false,
+      playListInfo: undefined
+    });
   }
 
   try {
     await spotifyApi.refreshAccessToken();
     let result = await spotifyApi.getUserPlaylists();
-    res.send({ sucessful: true, playListInfo: result.body.items });
+    res.send({
+      sucessful: true,
+      playListInfo: result.body.items
+    });
   } catch (exception) {
     console.log(exception);
   }
@@ -347,13 +416,19 @@ app.put("/getPlayLists", async (req, res) => {
 app.put("/getPlayListsContents", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.user.socket);
   if (activeUser.connectedDevice.id == undefined) {
-    res.send({ sucessful: false, playListInfo: undefined });
+    res.send({
+      sucessful: false,
+      playListInfo: undefined
+    });
   }
 
   try {
     await spotifyApi.refreshAccessToken();
     let result = await spotifyApi.getPlaylistTracks(req.body.playListID);
-    res.send({ sucessful: true, playListInfo: result.body.items });
+    res.send({
+      sucessful: true,
+      playListInfo: result.body.items
+    });
   } catch (exception) {
     console.log(exception);
   }
