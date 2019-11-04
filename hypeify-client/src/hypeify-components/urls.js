@@ -5,6 +5,7 @@ const SERVER = "http://192.168.43.14:2500"; // pi dev
 //url constants
 
 module.exports = {
+  SERVER: `${SERVER}`,
   LOGIN: `${SERVER}/login`,
   TOKEN: `${SERVER}/token`,
   SPOTDEVINFO: `${SERVER}/spotifyDeviceInfo`,
