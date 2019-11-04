@@ -54,6 +54,8 @@ class activeUser {
     this.connectedDevice = device;
   }
 }
+//either localhost or pi ip
+const localip = "192.168.43.14"
 
 var scopes = [
     "user-read-private",
@@ -61,7 +63,7 @@ var scopes = [
     "user-read-playback-state",
     "user-modify-playback-state"
   ],
-  redirectUri = "http://localhost:2500/token",
+  redirectUri = "http://" + localip + ":2500/token",
   clientId = "508fba76b5c3412db876cbe71f7be4ba",
   state = "some-state-of-my-choice";
 
@@ -116,7 +118,7 @@ app.get("/token", async (req, res) => {
     //res.redirect("http://localhost:3000/party");
 
     //for pi use
-    res.redirect("http://192.168.43.14:3000/party");
+    res.redirect("http://" + localip + ":3000/party");
   } catch (e) {
     console.log(e);
   }
