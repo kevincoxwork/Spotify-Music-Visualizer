@@ -166,9 +166,9 @@ function secondTenthsUpdated() {
     ) {
       let NUM_LEDS = 480;
       let pixelData = new Uint32Array(NUM_LEDS);
-      if (ws281x === undefined){
+    
       ws281x.init({count: NUM_LEDS, stripType: ws281x.WS2811_STRIP_GRB});
-      }
+      
       for (var i = 0; i < NUM_LEDS; i++) {
         pixelData = new Array(NUM_LEDS).fill(new rgb2Int(255, 0 ,0));
       }
