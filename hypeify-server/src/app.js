@@ -12,7 +12,7 @@ const SpotifyWebApi = require("spotify-web-api-node");
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:2500"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:2500", "http://192.168.43.14:2500", "http://192.168.43.14:3000"];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -112,7 +112,11 @@ app.get("/token", async (req, res) => {
         console.log("Something went wrong!", err);
       }
     );
-    res.redirect("http://localhost:3000/party");
+    //for local host use
+    //res.redirect("http://localhost:3000/party");
+
+    //for pi use
+    res.redirect("http://192.168.43.14:3000/party");
   } catch (e) {
     console.log(e);
   }
