@@ -164,9 +164,9 @@ function secondTenthsUpdated() {
       savedmusicData.beats[0].confidence >= 0.2 &&
       savedmusicData.beats[0].duration >= 0.1
     ) {
+      let NUM_LEDS = 480;
       let pixelData = new Uint32Array(NUM_LEDS);
       if (ws281x === undefined){
-      let NUM_LEDS = 480;
       ws281x.init({count: NUM_LEDS, stripType: ws281x.WS2811_STRIP_GRB});
       }
       for (var i = 0; i < NUM_LEDS; i++) {
