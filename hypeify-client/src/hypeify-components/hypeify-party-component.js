@@ -94,7 +94,7 @@ export default class PartyComponent extends React.PureComponent {
 
   componentDidMount = () => {
     // connect to server
-    const socket = io.connect("http://localhost:2500");
+    const socket = io.connect(urls.SERVER);
 
     socket.on("connectedSuccessfully", this.connectedSuccessfully);
     socket.on("disconnect", this.socketDisconnect);
