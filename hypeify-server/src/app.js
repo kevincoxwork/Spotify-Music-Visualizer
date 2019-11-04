@@ -131,12 +131,14 @@ async function getAudioAnalysis(trackURI) {
 
 let timer;
 let savedmusicData;
+let NUM_LEDS = 480;
 async function visualizeMusic(musicData, startTime) {
 
   if (timer !== undefined) {
     timer.removeEventListener("secondTenthsUpdated", secondTenthsUpdated);
   }
 
+  ws281x.init(NUM_LEDS);
   timer = new Timer();
   timer.start({
     precision: "secondTenths",
@@ -155,6 +157,10 @@ function rgb2Int(r, g, b) {
   return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
 }
 
+function sleepVisual (time){
+ return new Promise((resolve) => setTimeout(resolve,time));
+}
+
 function secondTenthsUpdated() {
   if (
     timer.getTotalTimeValues().secondTenths >=
@@ -164,14 +170,12 @@ function secondTenthsUpdated() {
       savedmusicData.beats[0].confidence >= 0.2 &&
       savedmusicData.beats[0].duration >= 0.1
     ) {
-      let NUM_LEDS = 480;
       let pixelData = new Uint32Array(NUM_LEDS);
-    
       ws281x.init(NUM_LEDS);
-      
-      for (var i = 0; i < NUM_LEDS; i++) {
-        pixelData = new Array(NUM_LEDS).fill(new rgb2Int(255, 0 ,0));
-      }
+            
+      for (let i =0; i < NUM_LEDS; i++){
+         pixelData[i] = rgb2Int(0,0,255);
+       }
       ws281x.render(pixelData);
       
       console.log(
@@ -180,8 +184,15 @@ function secondTenthsUpdated() {
         " my local time is " +
         timer.getTotalTimeValues().secondTenths.toString()
       );
+      //we must use promise here, async , await will cause seg fault
+      sleepVisual(100).then(() => {
+      for (let i = 0; i < NUM_LEDS; i++){
+       pixelData[i] = rgb2Int(255,255,255);
+      }
+      ws281x.render(pixelData);
+      });
 
-      ws281x.reset();
+   
       // if (musicData.tatums[0].duration >0.3){
       //     musicData.tatums[0].color = "green";
       // }else{
