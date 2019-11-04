@@ -36,9 +36,7 @@ const port = 2500;
 
 let mapOfActiveUsers = new Map();
 
-let NUM_LEDS = 480;
-let pixelData = new Uint32Array(NUM_LEDS);
-ws281x.init(NUM_LEDS);
+
 
 process.on('SIGINT', function () {
   ws281x.reset();
@@ -166,11 +164,16 @@ function secondTenthsUpdated() {
       savedmusicData.beats[0].confidence >= 0.2 &&
       savedmusicData.beats[0].duration >= 0.1
     ) {
-
+      let pixelData = new Uint32Array(NUM_LEDS);
+      if (ws281x === undefined){
+      let NUM_LEDS = 480;
+      ws281x.init({count: NUM_LEDS, stripType: ws281x.WS2811_STRIP_GRB});
+      }
       for (var i = 0; i < NUM_LEDS; i++) {
         pixelData = new Array(NUM_LEDS).fill(new rgb2Int(255, 0 ,0));
       }
       ws281x.render(pixelData);
+      
       console.log(
         "Emiting at " +
         savedmusicData.beats[0].start +
