@@ -1,6 +1,7 @@
 const express = require("express");
 const request = require("request");
 const cors = require("cors");
+const ws281x = require('../node-rpi-ws281x-native/lib/ws281x-native');
 const {
   Timer
 } = require("easytimer.js");
@@ -34,6 +35,15 @@ let io = socketIO(server);
 const port = 2500;
 
 let mapOfActiveUsers = new Map();
+
+let NUM_LEDS = 480;
+let pixelData = new Uint32Array(NUM_LEDS);
+ws281x.init(NUM_LEDS);
+
+process.on('SIGINT', function () {
+  ws281x.reset();
+  process.nextTick(function () { process.exit(0); });
+});
 
 class activeUser {
   constructor(access_token, socket, name, room, device) {
@@ -137,6 +147,10 @@ async function visualizeMusic(musicData, startTime) {
   timer.addEventListener("secondTenthsUpdated", secondTenthsUpdated);
 }
 
+function rgb2Int(r, g, b) {
+  return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+}
+
 function secondTenthsUpdated() {
   if (
     timer.getTotalTimeValues().secondTenths >=
@@ -146,12 +160,19 @@ function secondTenthsUpdated() {
       savedmusicData.beats[0].confidence >= 0.2 &&
       savedmusicData.beats[0].duration >= 0.1
     ) {
+
+      for (var i = 0; i < NUM_LEDS; i++) {
+        pixelData = new Array(NUM_LEDS).fill(new rgb2Int(255, 0 ,0));
+      }
+      ws281x.render(pixelData);
       console.log(
         "Emiting at " +
         savedmusicData.beats[0].start +
         " my local time is " +
         timer.getTotalTimeValues().secondTenths.toString()
       );
+
+      ws281x.reset();
       // if (musicData.tatums[0].duration >0.3){
       //     musicData.tatums[0].color = "green";
       // }else{
