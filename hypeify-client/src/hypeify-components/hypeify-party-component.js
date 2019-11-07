@@ -15,7 +15,7 @@ import {
   selectSong,
   getDeviceStatus,
   skipCurrentTrack,
-  getPlayListsTracks,
+  getPlaylistTracks,
   seekBack,
   seekForward
 } from "./common-endpoint-methods.js";
@@ -36,8 +36,8 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
-    playlistTrackID = "6euMPZz8wRBQBf9U2W91Xw";
-    let result = await getPlayListsTracks(
+    playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
+    let result = await getPlaylistTracks(
       playlistTrackID,
       this.state.activeUser
     );

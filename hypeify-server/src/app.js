@@ -1,10 +1,8 @@
 const express = require("express");
 const request = require("request");
 const cors = require("cors");
-const ws281x = require('../node-rpi-ws281x-native/lib/ws281x-native');
-const {
-  Timer
-} = require("easytimer.js");
+const ws281x = require("../node-rpi-ws281x-native/lib/ws281x-native");
+const { Timer } = require("easytimer.js");
 const socketIO = require("socket.io");
 const http = require("http");
 const bodyParser = require("body-parser");
@@ -12,10 +10,15 @@ const SpotifyWebApi = require("spotify-web-api-node");
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:2500", "http://192.168.43.14:2500", "http://192.168.43.14:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:2500",
+  "http://192.168.43.14:2500",
+  "http://192.168.43.14:3000"
+];
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: function(origin, callback) {
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
@@ -36,11 +39,11 @@ const port = 2500;
 
 let mapOfActiveUsers = new Map();
 
-
-
-process.on('SIGINT', function () {
+process.on("SIGINT", function() {
   ws281x.reset();
-  process.nextTick(function () { process.exit(0); });
+  process.nextTick(function() {
+    process.exit(0);
+  });
 });
 
 class activeUser {
@@ -53,7 +56,8 @@ class activeUser {
   }
 }
 //either localhost or pi ip
-const localip = "192.168.43.14"
+//const localip = "192.168.43.14"
+const localip = "localhost";
 
 var scopes = [
     "user-read-private",
@@ -98,7 +102,7 @@ app.get("/token", async (req, res) => {
   try {
     // Retrieve an access token and a refresh token
     await spotifyApi.authorizationCodeGrant(req.query.code).then(
-      function (data) {
+      function(data) {
         lastAccessToken = data.body["access_token"];
         console.log("The token expires in " + data.body["expires_in"]);
         console.log("The access token is " + data.body["access_token"]);
@@ -108,7 +112,7 @@ app.get("/token", async (req, res) => {
         spotifyApi.setAccessToken(data.body["access_token"]);
         spotifyApi.setRefreshToken(data.body["refresh_token"]);
       },
-      function (err) {
+      function(err) {
         console.log("Something went wrong!", err);
       }
     );
@@ -133,7 +137,6 @@ let timer;
 let savedmusicData;
 let NUM_LEDS = 480;
 async function visualizeMusic(musicData, startTime) {
-
   if (timer !== undefined) {
     timer.removeEventListener("secondTenthsUpdated", secondTenthsUpdated);
   }
@@ -147,8 +150,7 @@ async function visualizeMusic(musicData, startTime) {
     }
   });
 
-  if (musicData !== undefined)
-    savedmusicData = musicData.body;
+  if (musicData !== undefined) savedmusicData = musicData.body;
 
   timer.addEventListener("secondTenthsUpdated", secondTenthsUpdated);
 }
@@ -157,8 +159,8 @@ function rgb2Int(r, g, b) {
   return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
 }
 
-function sleepVisual (time){
- return new Promise((resolve) => setTimeout(resolve,time));
+function sleepVisual(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
 }
 
 function secondTenthsUpdated() {
@@ -172,27 +174,26 @@ function secondTenthsUpdated() {
     ) {
       let pixelData = new Uint32Array(NUM_LEDS);
       ws281x.init(NUM_LEDS);
-            
-      for (let i =0; i < NUM_LEDS; i++){
-         pixelData[i] = rgb2Int(0,0,255);
-       }
+
+      for (let i = 0; i < NUM_LEDS; i++) {
+        pixelData[i] = rgb2Int(0, 0, 255);
+      }
       ws281x.render(pixelData);
-      
+
       console.log(
         "Emiting at " +
-        savedmusicData.beats[0].start +
-        " my local time is " +
-        timer.getTotalTimeValues().secondTenths.toString()
+          savedmusicData.beats[0].start +
+          " my local time is " +
+          timer.getTotalTimeValues().secondTenths.toString()
       );
       //we must use promise here, async , await will cause seg fault
       sleepVisual(100).then(() => {
-      for (let i = 0; i < NUM_LEDS; i++){
-       pixelData[i] = rgb2Int(255,255,255);
-      }
-      ws281x.render(pixelData);
+        for (let i = 0; i < NUM_LEDS; i++) {
+          pixelData[i] = rgb2Int(255, 255, 255);
+        }
+        ws281x.render(pixelData);
       });
 
-   
       // if (musicData.tatums[0].duration >0.3){
       //     musicData.tatums[0].color = "green";
       // }else{
@@ -211,21 +212,16 @@ function secondTenthsUpdated() {
 }
 
 async function resumeVisualzingMusic() {
-
   if (timer !== undefined) {
     timer.start();
   }
-
 }
 
 async function pauseVisualingMusic() {
   if (timer !== undefined) {
     timer.pause();
   }
-
-
 }
-
 
 app.put("/spotifyDeviceInfo", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.socket);
@@ -269,7 +265,6 @@ app.put("/skipTrack", async (req, res) => {
 });
 
 app.put("/seekForward", async (req, res) => {
-
   //get this from the request
   const timeToSkipAheadBy = 1000;
 
@@ -374,9 +369,14 @@ app.put("/deviceStatus", async (req, res) => {
       };
 
       await spotifyApi.pause();
-      
-      let visualizationData = await getAudioAnalysis(currentPlayingTrack.body.item.uri);
-      await visualizeMusic(visualizationData, currentPlayingTrack.body.progress_ms);
+
+      let visualizationData = await getAudioAnalysis(
+        currentPlayingTrack.body.item.uri
+      );
+      await visualizeMusic(
+        visualizationData,
+        currentPlayingTrack.body.progress_ms
+      );
 
       await spotifyApi.play();
     }
@@ -434,20 +434,23 @@ app.put("/selectSong", async (req, res) => {
 });
 
 app.put("/getPlayLists", async (req, res) => {
-  let activeUser = mapOfActiveUsers.get(req.body.user.socket);
-  if (activeUser.connectedDevice.id == undefined) {
-    res.send({
-      sucessful: false,
-      playListInfo: undefined
-    });
-  }
-
   try {
     await spotifyApi.refreshAccessToken();
     let result = await spotifyApi.getUserPlaylists();
+
+    //create a more structed object for the frontend
+    let playlists = [];
+    for (let i = 0; i < result.body.items.length; i++) {
+      playlists.push({
+        id: result.body.items[i].id,
+        name: result.body.items[i].name,
+        image: result.body.items[i].images[0].url
+      });
+    }
+
     res.send({
       sucessful: true,
-      playListInfo: result.body.items
+      playListInfo: playlists
     });
   } catch (exception) {
     console.log(exception);
@@ -455,20 +458,26 @@ app.put("/getPlayLists", async (req, res) => {
 });
 
 app.put("/getPlayListsContents", async (req, res) => {
-  let activeUser = mapOfActiveUsers.get(req.body.user.socket);
-  if (activeUser.connectedDevice.id == undefined) {
-    res.send({
-      sucessful: false,
-      playListInfo: undefined
-    });
-  }
-
   try {
     await spotifyApi.refreshAccessToken();
     let result = await spotifyApi.getPlaylistTracks(req.body.playListID);
+
+    //improve the responce object for ease on the fron-end
+    //create a more structed object for the frontend
+    let playlistTracks = [];
+    for (let i = 0; i < result.body.items.length; i++) {
+      let timeConverter = new Date(result.body.items[i].track.duration_ms);
+
+      playlistTracks.push({
+        id: result.body.items[i].track.id,
+        name: result.body.items[i].track.name,
+        song_durration:
+          timeConverter.getUTCMinutes() + ":" + timeConverter.getUTCSeconds()
+      });
+    }
     res.send({
       sucessful: true,
-      playListInfo: result.body.items
+      playListInfo: playlistTracks
     });
   } catch (exception) {
     console.log(exception);
