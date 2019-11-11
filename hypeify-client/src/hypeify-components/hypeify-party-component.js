@@ -247,15 +247,7 @@ export default class PartyComponent extends React.PureComponent {
                     </div>
                   )}
 
-                    
-
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          <div  className="center">
-          <Grid 
+<Grid 
               container
               spacing={2}
               direction="row"
@@ -333,7 +325,13 @@ export default class PartyComponent extends React.PureComponent {
                 </div>
               </Grid>
             </Grid>
-          </div>
+
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          
         </div>
       </div>
     );
