@@ -240,7 +240,7 @@ export default class PartyComponent extends React.PureComponent {
                       <p className="buttonText">
                         Device Type: {this.state.deviceInfo.type}
                       </p>
-                      <img className="albumArtImage" src={this.state.albumArtInfo.url} height={this.state.albumArtInfo.height} width={this.state.albumArtInfo.width}></img>
+                      <img className="albumArtImage" src={this.state.albumArtInfo.url} height={this.state.albumArtInfo.height /2 } width={this.state.albumArtInfo.width /2 }></img>
                       <p className="buttonText">
                         {this.state.currentPlayingSong}
                       </p>
