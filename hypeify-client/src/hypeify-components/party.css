@@ -8,9 +8,7 @@
   flex-grow: 1;
 }
 
-.menuButton {
-  margin-right: 2em;
-}
+
 
 .sliderStyle {
   display: flex;
@@ -23,21 +21,21 @@
 }
 
 @media only screen and (min-width: 701px) {
-  .footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    align-items: center;
-    display: inline-flex;
+  
+  .centerWithLine {
+    margin: auto;
+    width: 50%;
+    border: 3px solid rgb(63, 81,181);
+    padding: 10px;
   }
+  .center {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+  }
+  
 
-  .sideButtons {
-    position: relative;
-    right: -85%;
-    top: -300px;
-    display: block;
-  }
+ 
 
   button {
     color: "primary";
@@ -46,12 +44,10 @@
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 20px;
-    color: white;
+    color: rgb(63, 81,181);
   }
 
-  .spaceButton {
-    margin-left: 100px;
-  }
+
 
   .headerText {
     font-family: "Comfortaa", cursive;
@@ -68,15 +64,10 @@
   }
 
   .playerButtons {
-    width: 150%;
-    margin: 10px 10px 10px 10px;
+    width: 120%;
+    padding: 10px 10px 10px 10px;
   }
 
-  .seekButtons {
-    position: relative;
-    top: 100px;
-    right: -600px;
-  }
 
   .headerDiv {
     font-family: "Comfortaa", cursive;
@@ -91,7 +82,7 @@
     /* Center and scale the image nicely */
     background-position: center;
     background-size: cover;
-    background-image: url("../backgroundParty.jpg");
+    /*background-image: url("../backgroundParty.jpg"); */
   }
 
   .buttonPadding {
@@ -100,65 +91,57 @@
   }
 
   p {
-    color: white;
+    color: rgb(63, 81,181);
   }
 }
 @media only screen and (max-width: 700px) {
-  body {
-    background-position: center;
-    background-size: cover;
-    background-image: url("../backgroundParty.jpg");
+  .centerWithLine {
+    margin: auto;
+    width: 50%;
+    border: 3px solid rgb(63, 81,181);
+    padding: 10px;
+  }
+  .center {
+    margin: auto;
+    width: 100%;
+    padding: 10px;
   }
 
-  .headerDiv {
-    text-align: left;
+  .albumArtImage{
+    height: 100%;
+    width: 100%;
   }
-
+  p {
+    font-size: xx-small;
+    
+    padding-left: 5px;
+    color: rgb(63, 81,181);
+  }
   .headerText {
     font-size: 12px;
     color: white;
   }
-
-  .buttonPadding {
-    display: "flex";
-    padding-top: 5px;
-  }
-
-  p {
-    font-size: small;
-    width: 80%;
-    padding-left: 5px;
-    color: white;
-  }
-
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 10px;
-    color: white;
+    color: rgb(63, 81,181);
   }
-
-  .sideButtons {
-    position: relative;
-    right: -10%;
-    top: 20px;
-    display: inline-flex;
+  .playerButtons {
+    width: 50%;
+    padding: 5px 5px 5px 5px;
   }
-
-  .footer {
-    position: absolute;
-    left: 0;
-    bottom: 10;
-    width: 100%;
-    text-align: left;
-    display: flex;
-  }
-
   .imageResponse {
-    width: 30px;
-    height: 30px;
+    width: 15px;
+    height: 15px;
   }
-
-  .responsePromptPhone {
-    align-content: flex-end;
+  time{
+    font-size: 12px;
   }
+  
+ 
+  .MuiButton-root {
+    min-width: 0px !important;
+  }
+  
 }
+

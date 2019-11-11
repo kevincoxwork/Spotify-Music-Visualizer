@@ -56,8 +56,8 @@ class activeUser {
   }
 }
 //either localhost or pi ip
-//const localip = "192.168.43.14"
-const localip = "localhost";
+const localip = "192.168.43.14"
+//const localip = "localhost";
 
 var scopes = [
     "user-read-private",
@@ -116,8 +116,6 @@ app.get("/token", async (req, res) => {
         console.log("Something went wrong!", err);
       }
     );
-    //for local host use
-    //res.redirect("http://localhost:3000/party");
 
     //for pi use
     res.redirect("http://" + localip + ":3000/party");
@@ -152,6 +150,12 @@ async function visualizeMusic(musicData, startTime) {
 
   if (musicData !== undefined) savedmusicData = musicData.body;
 
+  
+    while (savedmusicData.beats[0].start * 10 < startTime / 100){
+      savedmusicData.beats.shift();
+    }
+  
+
   timer.addEventListener("secondTenthsUpdated", secondTenthsUpdated);
 }
 
@@ -164,7 +168,7 @@ function sleepVisual(time) {
 }
 
 function secondTenthsUpdated() {
-  if (savedmusicData.beats[0].start !== undefined) {
+  if (typeof savedmusicData.beats[0] !== "undefined") {
     if (
       timer.getTotalTimeValues().secondTenths >=
       savedmusicData.beats[0].start * 10
@@ -278,7 +282,11 @@ app.put("/seekTrack", async (req, res) => {
     await spotifyApi.refreshAccessToken();
     let newTime = req.body.seekTime;
 
-    await visualizeMusic(undefined, newTime);
+    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
+    let visualizationData = await getAudioAnalysis(
+      currentPlayingTrack.body.item.uri
+    );
+    await visualizeMusic(visualizationData, newTime);
     await spotifyApi.seek(newTime);
 
     await spotifyApi.play();
@@ -289,6 +297,8 @@ app.put("/seekTrack", async (req, res) => {
   }
 });
 
+let lastPlayingSong;
+
 app.put("/followTrack", async (req, res) => {
   try {
     await spotifyApi.refreshAccessToken();
@@ -296,7 +306,8 @@ app.put("/followTrack", async (req, res) => {
     res.send({
       progress: {
         time: currentPlayingTrack.body.progress_ms,
-        duration: currentPlayingTrack.body.item.duration_ms
+        duration: currentPlayingTrack.body.item.duration_ms,
+        art: currentPlayingTrack.body.item.album.images[0]
       }
     });
   } catch (exception) {

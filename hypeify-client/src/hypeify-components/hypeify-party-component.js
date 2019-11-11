@@ -1,7 +1,8 @@
 import React from "react";
 import io from "socket.io-client";
 import { songTrack, activeUser } from "./common-classes";
-import PlayPauseIcon from "../pauseplay.png";
+import PlayIcon from "../pause.png";
+import PauseIcon from "../play.png";
 import FastForwardIcon from "../fastforwardicon.png";
 import BackwardIcon from "../backwardicon.png";
 import {
@@ -50,7 +51,8 @@ export default class PartyComponent extends React.PureComponent {
     anchorEl: null,
     currentPos: 0,
     trackLength: 0,
-    songPlaying: false
+    songPlaying: false,
+    albumArtInfo: {url: "", height: "", width: "" }
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
@@ -90,8 +92,8 @@ export default class PartyComponent extends React.PureComponent {
 
   async follow() {
     let results = await followTrack();
-    this.setState({ currentPos: results.progress.time });
-    this.setState({ trackLength: results.progress.duration });
+    this.setState({ currentPos: results.progress.time, trackLength: results.progress.duration, albumArtInfo: results.progress.art });
+   
   }
 
   async pausePlayCurrentTrackClicked() {
@@ -205,36 +207,30 @@ export default class PartyComponent extends React.PureComponent {
             </Menu>
           </Toolbar>
         </AppBar>
-        <div>
-          <div className="headerDiv">
-            <p className="headerText">
-              Your Room Name Is: {this.state.activeUser.room}
-            </p>
-            <p>
-              Logged in: Your receivedAccessToken Is{" "}
-              {this.state.activeUser.access_token}
-            </p>
-          </div>
+        <div  className="centerWithLine" >
+          
           {this.state.deviceInfo === null && (
             <PromptDeviceComponent
               active_user={this.state.activeUser}
               callbackToParent={this.deviceSelected}
             ></PromptDeviceComponent>
           )}
-          <Grid
+          <Grid 
             container
             spacing={2}
             direction="row"
             alignItems="center"
             justify="center"
+            
           >
-            <Grid item xs={0} style={{ width: "80%" }}>
-              <Card style={{ width: "80%", backgroundColor: "Black" }}>
+            <Grid item xs={0} style={{ width: "80%" }} >
+              <Card   style={{ width: "80%" }} className="center">
                 <CardContent
                   style={{
                     textAlign: "center",
-                    backgroundColor: "Black"
+                    
                   }}
+                 
                 >
                   {this.state.deviceInfo != undefined && (
                     <div>
@@ -244,61 +240,57 @@ export default class PartyComponent extends React.PureComponent {
                       <p className="buttonText">
                         Device Type: {this.state.deviceInfo.type}
                       </p>
+                      <img className="albumArtImage" src={this.state.albumArtInfo.url} height={this.state.albumArtInfo.height} width={this.state.albumArtInfo.width}></img>
                       <p className="buttonText">
-                        Current Volume: {this.state.deviceInfo.volume_percent}
-                      </p>
-                      <p className="buttonText">
-                        Current Song is: {this.state.currentPlayingSong}
-                      </p>
-                      <p className="buttonText">
-                        Is Song Playing is:{" "}
-                        {JSON.stringify(this.state.playbackState)}
-                      </p>
-                      <p className="buttonText">
-                        User PlayList Data is:{" "}
-                        {JSON.stringify(this.state.userPlayLists)}
+                        {this.state.currentPlayingSong}
                       </p>
                     </div>
                   )}
+
+                    
+
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
-          <Grid
-            container
-            spacing={3}
-            direction="row"
-            alignItems="center"
-            justify="center"
-            style={{ width: "100%" }}
-          >
-            <Grid item xs={0}>
-              <Moment format="m [:] ss" date={currentPos}></Moment>
+
+          <div  className="center">
+          <Grid 
+              container
+              spacing={2}
+              direction="row"
+              alignItems="center"
+              justify="center"
+              className="center"
+              style={{margin: "auto"}}
+            >
+            
+              <Grid item xs={0}>
+                <Moment format="m [:] ss" date={currentPos}></Moment>
+              </Grid>
+              <Grid item xs={5} style={{ width: "100%" }}>
+                <Slider
+                  className="sliderStyle"
+                  onChangeCommitted={this.handleSeek}
+                  min={0}
+                  max={trackLength}
+                  value={currentPos}
+                  aria-labelledby="continuous-slider"
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <Moment format="m [:] ss" date={trackLength}></Moment>
+              </Grid>
             </Grid>
-            <Grid item xs={5} style={{ width: 100 }}>
-              <Slider
-                className="sliderStyle"
-                onChangeCommitted={this.handleSeek}
-                min={0}
-                max={trackLength}
-                value={currentPos}
-                aria-labelledby="continuous-slider"
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <Moment format="m [:] ss" date={trackLength}></Moment>
-            </Grid>
-          </Grid>
-          <div className="footer">
             <Grid
               container
               spacing={3}
               direction="row"
               alignItems="center"
               justify="center"
-              style={{ width: "90%" }}
+              className="center"
             >
-              <Grid item xs={3}>
+              <Grid item xs={3} >
                 <div className="spaceButton">
                   <Button
                     variant="contained"
@@ -317,8 +309,12 @@ export default class PartyComponent extends React.PureComponent {
                     color="primary"
                     className="playerButtons"
                     onClick={this.pausePlayCurrentTrackClicked.bind(this)}
-                  >
-                    <img className="imageResponse" src={PlayPauseIcon}></img>
+                  > {!this.state.playbackState && ( 
+                    <img className="imageResponse" src={PauseIcon}></img>
+                    )}
+                    {this.state.playbackState && ( 
+                    <img className="imageResponse" src={PlayIcon}></img>
+                    )}
                   </Button>
                 </div>
               </Grid>
@@ -330,7 +326,9 @@ export default class PartyComponent extends React.PureComponent {
                     className="playerButtons"
                     onClick={this.skipCurrentTrackRightClicked.bind(this)}
                   >
+                     
                     <img className="imageResponse" src={FastForwardIcon}></img>
+                     
                   </Button>
                 </div>
               </Grid>
