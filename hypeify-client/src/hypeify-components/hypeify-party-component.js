@@ -273,9 +273,7 @@ export default class PartyComponent extends React.PureComponent {
             style={{ width: "100%" }}
           >
             <Grid item xs={0}>
-              <Moment format="m [:] ss">
-                <span className="buttonText">{currentPos}</span>
-              </Moment>
+              <Moment format="m [:] ss" date={currentPos}></Moment>
             </Grid>
             <Grid item xs={5} style={{ width: 100 }}>
               <Slider
@@ -288,9 +286,7 @@ export default class PartyComponent extends React.PureComponent {
               />
             </Grid>
             <Grid item xs={3}>
-              <Moment format="m [:] ss">
-                <span style="buttonText">{trackLength}</span>
-              </Moment>
+              <Moment format="m [:] ss" date={trackLength}></Moment>
             </Grid>
           </Grid>
           <div className="footer">

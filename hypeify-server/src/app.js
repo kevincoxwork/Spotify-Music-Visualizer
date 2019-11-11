@@ -164,50 +164,52 @@ function sleepVisual(time) {
 }
 
 function secondTenthsUpdated() {
-  if (
-    timer.getTotalTimeValues().secondTenths >=
-    savedmusicData.beats[0].start * 10
-  ) {
+  if (savedmusicData.beats[0].start !== undefined) {
     if (
-      savedmusicData.beats[0].confidence >= 0.2 &&
-      savedmusicData.beats[0].duration >= 0.1
+      timer.getTotalTimeValues().secondTenths >=
+      savedmusicData.beats[0].start * 10
     ) {
-      let pixelData = new Uint32Array(NUM_LEDS);
-      ws281x.init(NUM_LEDS);
+      if (
+        savedmusicData.beats[0].confidence >= 0.2 &&
+        savedmusicData.beats[0].duration >= 0.1
+      ) {
+        let pixelData = new Uint32Array(NUM_LEDS);
+        ws281x.init(NUM_LEDS);
 
-      for (let i = 0; i < NUM_LEDS; i++) {
-        pixelData[i] = rgb2Int(0, 0, 255);
-      }
-      ws281x.render(pixelData);
-
-      console.log(
-        "Emiting at " +
-          savedmusicData.beats[0].start +
-          " my local time is " +
-          timer.getTotalTimeValues().secondTenths.toString()
-      );
-      //we must use promise here, async , await will cause seg fault
-      sleepVisual(100).then(() => {
         for (let i = 0; i < NUM_LEDS; i++) {
-          pixelData[i] = rgb2Int(255, 255, 255);
+          pixelData[i] = rgb2Int(0, 0, 255);
         }
         ws281x.render(pixelData);
-      });
 
-      // if (musicData.tatums[0].duration >0.3){
-      //     musicData.tatums[0].color = "green";
-      // }else{
-      //     musicData.tatums[0].color = "blue";
-      // }
-      // //socket.emit("beat", musicData.tatums[0]);
-      // console.log(musicData.tatums[0]);
+        console.log(
+          "Emiting at " +
+            savedmusicData.beats[0].start +
+            " my local time is " +
+            timer.getTotalTimeValues().secondTenths.toString()
+        );
+        //we must use promise here, async , await will cause seg fault
+        sleepVisual(100).then(() => {
+          for (let i = 0; i < NUM_LEDS; i++) {
+            pixelData[i] = rgb2Int(255, 255, 255);
+          }
+          ws281x.render(pixelData);
+        });
+
+        // if (musicData.tatums[0].duration >0.3){
+        //     musicData.tatums[0].color = "green";
+        // }else{
+        //     musicData.tatums[0].color = "blue";
+        // }
+        // //socket.emit("beat", musicData.tatums[0]);
+        // console.log(musicData.tatums[0]);
+      }
+
+      savedmusicData.beats.shift();
     }
-
-    savedmusicData.beats.shift();
-  }
-  if (timer.getTimeValues().seconds > savedmusicData.track.duration) {
-    console.log("Done the song!");
-    return;
+    if (timer.getTimeValues().seconds > savedmusicData.track.duration) {
+      console.log("Done the song!");
+      return;
+    }
   }
 }
 
@@ -275,7 +277,12 @@ app.put("/seekTrack", async (req, res) => {
   try {
     await spotifyApi.refreshAccessToken();
     let newTime = req.body.seekTime;
+
+    await visualizeMusic(undefined, newTime);
     await spotifyApi.seek(newTime);
+
+    await spotifyApi.play();
+
     res.send({ sucessful: true });
   } catch (exception) {
     console.log(exception);
@@ -285,13 +292,13 @@ app.put("/seekTrack", async (req, res) => {
 app.put("/followTrack", async (req, res) => {
   try {
     await spotifyApi.refreshAccessToken();
-    let progress = undefined;
     let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
-    progress = {
-      time: currentPlayingTrack.body.progress_ms,
-      duration: currentPlayingTrack.body.item.duration_ms
-    };
-    res.send({ progress });
+    res.send({
+      progress: {
+        time: currentPlayingTrack.body.progress_ms,
+        duration: currentPlayingTrack.body.item.duration_ms
+      }
+    });
   } catch (exception) {
     console.log(exception);
   }
@@ -327,22 +334,16 @@ app.put("/resumeTrack", async (req, res) => {
   }
   try {
     await spotifyApi.refreshAccessToken();
-    //await visualizeMusic();
-    let progress = undefined;
-    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
-    progress = {
-      time: currentPlayingTrack.body.progress_ms,
-      duration: currentPlayingTrack.body.item.duration_ms
-    };
-    await spotifyApi.play();
 
-    res.send({ progress });
+    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
 
     await resumeVisualzingMusic();
     await spotifyApi.play();
 
     res.send({
-      sucessful: true
+      sucessful: true,
+      time: currentPlayingTrack.body.progress_ms,
+      duration: currentPlayingTrack.body.item.duration_ms
     });
   } catch (exception) {
     console.log(exception);
