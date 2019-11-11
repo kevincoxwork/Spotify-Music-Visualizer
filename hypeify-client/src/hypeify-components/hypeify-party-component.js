@@ -29,15 +29,9 @@ import {
   selectSong,
   getDeviceStatus,
   skipCurrentTrack,
-<<<<<<< HEAD
   getPlayListsTracks,
   seekTrack,
   followTrack
-=======
-  getPlaylistTracks,
-  seekBack,
-  seekForward
->>>>>>> 713c4ef1e2ff2275a483bb6d12ac040a49e819e0
 } from "./common-endpoint-methods.js";
 
 const queue = require("queue");
@@ -61,7 +55,7 @@ export default class PartyComponent extends React.PureComponent {
 
   async getPlayListsTracksClicked(playlistTrackID) {
     playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
-    let result = await getPlaylistTracks(
+    let result = await getPlayListsTracks(
       playlistTrackID,
       this.state.activeUser
     );
@@ -96,10 +90,8 @@ export default class PartyComponent extends React.PureComponent {
 
   async follow() {
     let results = await followTrack();
-    if (this.state.songPlaying == true) {
-      this.setState({ currentPos: results.progress.time });
-      this.setState({ trackLength: results.progress.duration });
-    }
+    this.setState({ currentPos: results.progress.time });
+    this.setState({ trackLength: results.progress.duration });
   }
 
   async pausePlayCurrentTrackClicked() {
