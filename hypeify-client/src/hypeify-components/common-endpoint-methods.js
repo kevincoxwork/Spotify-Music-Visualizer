@@ -41,20 +41,20 @@ module.exports.getPlayLists = async function getPlayLists(activeUser) {
   }
 };
 
-module.exports.seekBack = async function seekBack() {
-  let reponse = await fetch(urls.SPOTSEEKBACK, {
+module.exports.seekTrack = async function seekTrack(newTime) {
+  let reponse = await fetch(urls.SPOTSEEK, {
     method: "PUT",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({})
+    body: JSON.stringify({ seekTime: newTime })
   });
   let finishedResponse = await reponse.json();
 };
 
-module.exports.seekForward = async function seekForward() {
-  let response = await fetch(urls.SPOTSEEKFORWARD, {
+module.exports.followTrack = async function followTrack() {
+  let response = await fetch(urls.SPOTFOLLOWTRACK, {
     method: "PUT",
     headers: {
       Accept: "application/json",
@@ -63,6 +63,7 @@ module.exports.seekForward = async function seekForward() {
     body: JSON.stringify({})
   });
   let finishedResponse = await response.json();
+  return finishedResponse;
 };
 
 module.exports.pauseCurrentTrack = async function pauseCurrentTrack(

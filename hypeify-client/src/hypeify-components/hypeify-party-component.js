@@ -4,7 +4,21 @@ import { songTrack, activeUser } from "./common-classes";
 import PlayPauseIcon from "../pauseplay.png";
 import FastForwardIcon from "../fastforwardicon.png";
 import BackwardIcon from "../backwardicon.png";
-import { Button, Card, CardContent } from "@material-ui/core";
+import {
+  Button,
+  Card,
+  CardContent,
+  AppBar,
+  Typography,
+  IconButton,
+  Toolbar,
+  MenuItem,
+  Menu,
+  Slider,
+  Grid
+} from "@material-ui/core";
+import MenuIcon from "@material-ui/icons/Menu";
+import Moment from "react-moment";
 import "./party.css";
 import { textAlign } from "@material-ui/system";
 import PromptDeviceComponent from "./prompt-device-component";
@@ -16,8 +30,8 @@ import {
   getDeviceStatus,
   skipCurrentTrack,
   getPlayListsTracks,
-  seekBack,
-  seekForward
+  seekTrack,
+  followTrack
 } from "./common-endpoint-methods.js";
 
 const queue = require("queue");
@@ -32,7 +46,11 @@ export default class PartyComponent extends React.PureComponent {
     currentPlayingSong: "",
     userPlayLists: null,
     playbackState: false,
-    buttonTitle: ""
+    buttonTitle: "",
+    anchorEl: null,
+    currentPos: 0,
+    trackLength: 0,
+    songPlaying: false
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
@@ -66,20 +84,26 @@ export default class PartyComponent extends React.PureComponent {
     this.setState(result);
   }
 
-  async seekTrackForward() {
-    await seekForward();
+  async seek(newTime) {
+    await seekTrack(newTime);
   }
 
-  async seekTrackBack() {
-    await seekBack();
+  async follow() {
+    let results = await followTrack();
+    if (this.state.songPlaying == true) {
+      this.setState({ currentPos: results.progress.time });
+      this.setState({ trackLength: results.progress.duration });
+    }
   }
 
   async pausePlayCurrentTrackClicked() {
     let result = null;
     if (this.state.playbackState) {
       await pauseCurrentTrack(this.state.activeUser);
+      this.setState({ songPlaying: false });
     } else {
       await resumeCurrentTrack(this.state.activeUser);
+      this.setState({ songPlaying: true });
     }
     result = await getDeviceStatus(this.state.activeUser);
     this.setState(result);
@@ -100,7 +124,12 @@ export default class PartyComponent extends React.PureComponent {
     socket.on("disconnect", this.socketDisconnect);
 
     this.setState({ socket: socket });
+    this.interval = setInterval(() => this.follow(), 1000);
   };
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
 
   socketDisconnect = dataFromServer => {};
 
@@ -113,9 +142,71 @@ export default class PartyComponent extends React.PureComponent {
     this.setState({ deviceInfo: passedDeviceInfo });
   };
 
+  handleMenu = event => {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleSeek = (event, newValue) => {
+    this.seek(newValue);
+  };
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  };
+
   render() {
+    const { anchorEl, setAnchorEl, currentPos, trackLength } = this.state;
+    const open = Boolean(anchorEl);
     return (
       <div className="background">
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              edge="start"
+              className="menuButton"
+              color="inherit"
+              aria-label="menu"
+              onClick={this.handleMenu}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" className="title">
+              Menu
+            </Typography>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left"
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left"
+              }}
+              open={open}
+              onClose={this.handleClose}
+            >
+              <MenuItem>
+                <span className="buttonText">Click To Get Devices</span>
+              </MenuItem>
+              <MenuItem onClick={this.selectSongClicked.bind(this)}>
+                <span className="buttonText">Click To Play Selected Song</span>
+              </MenuItem>
+              <MenuItem onClick={this.getPlayListsClicked.bind(this)}>
+                <span className="buttonText">
+                  Click To Get All User Playlists
+                </span>
+              </MenuItem>
+              <MenuItem onClick={this.getPlayListsTracksClicked.bind(this)}>
+                <span className="buttonText">
+                  Click To Get All Tracks From The PlayList
+                </span>
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
         <div>
           <div className="headerDiv">
             <p className="headerText">
@@ -132,134 +223,124 @@ export default class PartyComponent extends React.PureComponent {
               callbackToParent={this.deviceSelected}
             ></PromptDeviceComponent>
           )}
-          <Card style={{ width: "80%", backgroundColor: "Black" }}>
-            <CardContent
-              style={{
-                textAlign: "center",
-                backgroundColor: "Black"
-              }}
-            >
-              {this.state.deviceInfo != undefined && (
-                <div>
-                  <p className="buttonText">
-                    Device Name: {this.state.deviceInfo.name}
-                  </p>
-                  <p className="buttonText">
-                    Device Type: {this.state.deviceInfo.type}
-                  </p>
-                  <p className="buttonText">
-                    Current Volume: {this.state.deviceInfo.volume_percent}
-                  </p>
-                  <p className="buttonText">
-                    Current Song is: {this.state.currentPlayingSong}
-                  </p>
-                  <p className="buttonText">
-                    Is Song Playing is:{" "}
-                    {JSON.stringify(this.state.playbackState)}
-                  </p>
-                  <p className="buttonText">
-                    User PlayList Data is:{" "}
-                    {JSON.stringify(this.state.userPlayLists)}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          <div className="sideButtons">
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                //onClick={this.getSpotifyDevices.bind(this)}
-              >
-                <span className="buttonText">Click To Get Devices</span>
-              </Button>
-            </div>
-            <br />
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.selectSongClicked.bind(this)}
-              >
-                <span className="buttonText">Click To Play Selected Song</span>
-              </Button>
-            </div>
-            <br />
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.getPlayListsClicked.bind(this)}
-              >
-                <span className="buttonText">
-                  Click To Get All User Playlists
-                </span>
-              </Button>
-            </div>
-            <br />
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                className="buttonOption4"
-                onClick={this.getPlayListsTracksClicked.bind(this)}
-              >
-                <span className="buttonText">
-                  Click To Get All Tracks From The PlayList
-                </span>
-              </Button>
-            </div>
-          </div>
-          <br />
-          <br />
-          <div className="seekButtons">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.seekTrackBack.bind(this)}
-            >
-              <span className="buttonText">Seek Back</span>
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.seekTrackForward.bind(this)}
-            >
-              <span className="buttonText">Seek Forward</span>
-            </Button>
-          </div>
+          <Grid
+            container
+            spacing={2}
+            direction="row"
+            alignItems="center"
+            justify="center"
+          >
+            <Grid item xs={0} style={{ width: "80%" }}>
+              <Card style={{ width: "80%", backgroundColor: "Black" }}>
+                <CardContent
+                  style={{
+                    textAlign: "center",
+                    backgroundColor: "Black"
+                  }}
+                >
+                  {this.state.deviceInfo != undefined && (
+                    <div>
+                      <p className="buttonText">
+                        Device Name: {this.state.deviceInfo.name}
+                      </p>
+                      <p className="buttonText">
+                        Device Type: {this.state.deviceInfo.type}
+                      </p>
+                      <p className="buttonText">
+                        Current Volume: {this.state.deviceInfo.volume_percent}
+                      </p>
+                      <p className="buttonText">
+                        Current Song is: {this.state.currentPlayingSong}
+                      </p>
+                      <p className="buttonText">
+                        Is Song Playing is:{" "}
+                        {JSON.stringify(this.state.playbackState)}
+                      </p>
+                      <p className="buttonText">
+                        User PlayList Data is:{" "}
+                        {JSON.stringify(this.state.userPlayLists)}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+          <Grid
+            container
+            spacing={3}
+            direction="row"
+            alignItems="center"
+            justify="center"
+            style={{ width: "100%" }}
+          >
+            <Grid item xs={0}>
+              <Moment format="m [:] ss">
+                <span className="buttonText">{currentPos}</span>
+              </Moment>
+            </Grid>
+            <Grid item xs={5} style={{ width: 100 }}>
+              <Slider
+                className="sliderStyle"
+                onChangeCommitted={this.handleSeek}
+                min={0}
+                max={trackLength}
+                value={currentPos}
+                aria-labelledby="continuous-slider"
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <Moment format="m [:] ss">
+                <span style="buttonText">{trackLength}</span>
+              </Moment>
+            </Grid>
+          </Grid>
           <div className="footer">
-            <div className="leftButton">
-              <Button
-                variant="contained"
-                color="primary"
-                className="playerButtons"
-                onClick={this.skipCurrentTrackLeftClicked.bind(this)}
-              >
-                <img className="imageResponse" src={BackwardIcon}></img>
-              </Button>
-            </div>
-            <div className="centerButton">
-              <Button
-                variant="contained"
-                color="primary"
-                className="playerButtons"
-                onClick={this.pausePlayCurrentTrackClicked.bind(this)}
-              >
-                <img className="imageResponse" src={PlayPauseIcon}></img>
-              </Button>
-            </div>
-            <div style={{ paddingLeft: 1000 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                className="playerButtons"
-                onClick={this.skipCurrentTrackRightClicked.bind(this)}
-              >
-                <img className="imageResponse" src={FastForwardIcon}></img>
-              </Button>
-            </div>
+            <Grid
+              container
+              spacing={3}
+              direction="row"
+              alignItems="center"
+              justify="center"
+              style={{ width: "90%" }}
+            >
+              <Grid item xs={3}>
+                <div className="spaceButton">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className="playerButtons"
+                    onClick={this.skipCurrentTrackLeftClicked.bind(this)}
+                  >
+                    <img className="imageResponse" src={BackwardIcon}></img>
+                  </Button>
+                </div>
+              </Grid>
+              <Grid item xs={3}>
+                <div className="spaceButton">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className="playerButtons"
+                    onClick={this.pausePlayCurrentTrackClicked.bind(this)}
+                  >
+                    <img className="imageResponse" src={PlayPauseIcon}></img>
+                  </Button>
+                </div>
+              </Grid>
+              <Grid item xs={3}>
+                <div className="spaceButton">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className="playerButtons"
+                    onClick={this.skipCurrentTrackRightClicked.bind(this)}
+                  >
+                    <img className="imageResponse" src={FastForwardIcon}></img>
+                  </Button>
+                </div>
+              </Grid>
+            </Grid>
           </div>
         </div>
       </div>

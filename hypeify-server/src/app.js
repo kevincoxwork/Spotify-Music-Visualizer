@@ -184,6 +184,12 @@ app.put("/skipTrack", async (req, res) => {
     await sleep(400);
 
     let result = await spotifyApi.getMyCurrentPlayingTrack();
+    let progress = undefined;
+    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
+    progress = {
+      time: currentPlayingTrack.body.progress_ms,
+      duration: currentPlayingTrack.body.item.duration_ms
+    };
 
     res.send({
       sucessful: true,
@@ -191,7 +197,8 @@ app.put("/skipTrack", async (req, res) => {
         id: result.body.item.id,
         name: result.body.item.name,
         uri: result.body.item.uri
-      }
+      },
+      progress
     });
   } catch (exception) {
     console.log(exception);
@@ -234,6 +241,32 @@ app.put("/seekBack", async (req, res) => {
   }
 });
 
+app.put("/seekTrack", async (req, res) => {
+  try {
+    await spotifyApi.refreshAccessToken();
+    let newTime = req.body.seekTime;
+    await spotifyApi.seek(newTime);
+    res.send({ sucessful: true });
+  } catch (exception) {
+    console.log(exception);
+  }
+});
+
+app.put("/followTrack", async (req, res) => {
+  try {
+    await spotifyApi.refreshAccessToken();
+    let progress = undefined;
+    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
+    progress = {
+      time: currentPlayingTrack.body.progress_ms,
+      duration: currentPlayingTrack.body.item.duration_ms
+    };
+    res.send({ progress });
+  } catch (exception) {
+    console.log(exception);
+  }
+});
+
 app.put("/pauseTrack", async (req, res) => {
   let activeUser = mapOfActiveUsers.get(req.body.user.socket);
   if (activeUser.connectedDevice.id == undefined) {
@@ -259,9 +292,15 @@ app.put("/resumeTrack", async (req, res) => {
   try {
     await spotifyApi.refreshAccessToken();
     //await visualizeMusic();
+    let progress = undefined;
+    let currentPlayingTrack = await spotifyApi.getMyCurrentPlayingTrack();
+    progress = {
+      time: currentPlayingTrack.body.progress_ms,
+      duration: currentPlayingTrack.body.item.duration_ms
+    };
     await spotifyApi.play();
 
-    res.send({ sucessful: true });
+    res.send({ progress });
   } catch (exception) {
     console.log(exception);
   }

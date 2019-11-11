@@ -1,5 +1,27 @@
 @import url("https://fonts.googleapis.com/css?family=Comfortaa&display=swap");
 
+.title {
+  flex-grow: 1;
+}
+
+.root {
+  flex-grow: 1;
+}
+
+.menuButton {
+  margin-right: 2em;
+}
+
+.sliderStyle {
+  display: flex;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  align-items: center;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+}
+
 @media only screen and (min-width: 701px) {
   .footer {
     position: fixed;
@@ -24,17 +46,10 @@
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 20px;
+    color: white;
   }
 
-  .rightButton {
-    margin-left: 100px;
-  }
-
-  .centerButton {
-    margin-left: 100px;
-  }
-
-  .leftButton {
+  .spaceButton {
     margin-left: 100px;
   }
 
@@ -59,7 +74,8 @@
 
   .seekButtons {
     position: relative;
-    top: -300px;
+    top: 100px;
+    right: -600px;
   }
 
   .headerDiv {
@@ -118,6 +134,7 @@
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 10px;
+    color: white;
   }
 
   .sideButtons {
