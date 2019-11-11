@@ -29,9 +29,15 @@ import {
   selectSong,
   getDeviceStatus,
   skipCurrentTrack,
+<<<<<<< HEAD
   getPlayListsTracks,
   seekTrack,
   followTrack
+=======
+  getPlaylistTracks,
+  seekBack,
+  seekForward
+>>>>>>> 713c4ef1e2ff2275a483bb6d12ac040a49e819e0
 } from "./common-endpoint-methods.js";
 
 const queue = require("queue");
@@ -54,8 +60,8 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
-    playlistTrackID = "6euMPZz8wRBQBf9U2W91Xw";
-    let result = await getPlayListsTracks(
+    playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
+    let result = await getPlaylistTracks(
       playlistTrackID,
       this.state.activeUser
     );
@@ -110,7 +116,7 @@ export default class PartyComponent extends React.PureComponent {
   }
 
   async selectSongClicked() {
-    let songID = `spotify:track:4DTpngLjoHj5gFxEZFeD3J`;
+    let songID = `spotify:track:5tf1VVWniHgryyumXyJM7w`;
 
     let result = await selectSong(songID, this.state.activeUser);
     this.setState(result);
@@ -118,7 +124,7 @@ export default class PartyComponent extends React.PureComponent {
 
   componentDidMount = () => {
     // connect to server
-    const socket = io.connect("http://localhost:2500");
+    const socket = io.connect(urls.SERVER);
 
     socket.on("connectedSuccessfully", this.connectedSuccessfully);
     socket.on("disconnect", this.socketDisconnect);
