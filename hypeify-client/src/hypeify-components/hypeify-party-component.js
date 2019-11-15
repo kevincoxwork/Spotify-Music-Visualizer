@@ -16,7 +16,18 @@ import {
   MenuItem,
   Menu,
   Slider,
-  Grid
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  Paper
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import Moment from "react-moment";
@@ -30,7 +41,7 @@ import {
   selectSong,
   getDeviceStatus,
   skipCurrentTrack,
-  getPlayListsTracks,
+  getPlaylistTracks,
   seekTrack,
   followTrack
 } from "./common-endpoint-methods.js";
@@ -45,28 +56,32 @@ export default class PartyComponent extends React.PureComponent {
     deviceInfo: null,
     queue: new queue(),
     currentPlayingSong: "",
-    userPlayLists: null,
+    userPlayLists: new Array(),
     playbackState: false,
     buttonTitle: "",
     anchorEl: null,
     currentPos: 0,
     trackLength: 0,
     songPlaying: false,
-    albumArtInfo: {url: "", height: "", width: "" }
+    albumArtInfo: {url: "", height: "", width: "" },
+    popUpModel: false
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
-    playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
-    let result = await getPlayListsTracks(
+    //playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
+    let result = await getPlaylistTracks(
       playlistTrackID,
       this.state.activeUser
     );
+    console.log(result);
+      
     this.setState(result);
   }
 
   async getPlayListsClicked() {
     let result = await getPlayLists();
-    this.setState({ userPlayLists: result });
+    console.log(result);
+    this.setState({ userPlayLists: result.userPlayLists, popUpModel: true });
   }
 
   async skipCurrentTrackLeftClicked() {
@@ -154,11 +169,51 @@ export default class PartyComponent extends React.PureComponent {
     this.setState({ anchorEl: null });
   };
 
+  handleClose = () => {
+    this.setState({popUpModel: false});
+  };
+
+  handlePlayListClicked = (id) => {
+    this.getPlayListsTracksClicked(id);
+  }
+
   render() {
-    const { anchorEl, setAnchorEl, currentPos, trackLength } = this.state;
+    const { anchorEl, setAnchorEl, currentPos, trackLength, popUpModel, userPlayLists  } = this.state;
     const open = Boolean(anchorEl);
     return (
       <div className="background">
+        <Dialog open={popUpModel} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"> Choose A Song From Playlist</DialogTitle>
+        <DialogContent>
+        <Paper>
+      <Table  >
+        <TableHead>
+          <TableRow>
+            <TableCell>PlayList Name</TableCell>
+            <TableCell align="right">PlayList Art</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {userPlayLists.map(userPlayList => (
+            <TableRow key={userPlayList.id} onClick={this.handlePlayListClicked.bind(this, userPlayList.id)}>
+              <TableCell component="th" scope="row" >
+                {userPlayList.name}
+              </TableCell>
+              <TableCell align="right"  >
+                <img src={userPlayList.image} height="50" width="50" ></img>
+                </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table >
+    </Paper>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
         <AppBar position="static">
           <Toolbar>
             <IconButton
@@ -188,20 +243,14 @@ export default class PartyComponent extends React.PureComponent {
               open={open}
               onClose={this.handleClose}
             >
-              <MenuItem>
-                <span className="buttonText">Click To Get Devices</span>
-              </MenuItem>
-              <MenuItem onClick={this.selectSongClicked.bind(this)}>
-                <span className="buttonText">Click To Play Selected Song</span>
-              </MenuItem>
               <MenuItem onClick={this.getPlayListsClicked.bind(this)}>
                 <span className="buttonText">
-                  Click To Get All User Playlists
+                  Choose A Song From Playlist
                 </span>
               </MenuItem>
-              <MenuItem onClick={this.getPlayListsTracksClicked.bind(this)}>
+              <MenuItem>
                 <span className="buttonText">
-                  Click To Get All Tracks From The PlayList
+                 About
                 </span>
               </MenuItem>
             </Menu>
@@ -247,7 +296,7 @@ export default class PartyComponent extends React.PureComponent {
                     </div>
                   )}
 
-<Grid 
+              <Grid 
               container
               spacing={2}
               direction="row"
@@ -330,8 +379,6 @@ export default class PartyComponent extends React.PureComponent {
               </Card>
             </Grid>
           </Grid>
-
-          
         </div>
       </div>
     );

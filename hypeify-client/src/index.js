@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import HoldingComponent from "./hypeify-components/holding-component";
-import VisualizationComponent from "./hypeify-components/hypeify-software-visualization-demo";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(<HoldingComponent />, document.getElementById("root"));

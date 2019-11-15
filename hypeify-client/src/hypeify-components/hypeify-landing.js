@@ -1,7 +1,5 @@
 import React from "react";
 import { Spring, useSpring, animated } from "react-spring";
-//import HypeifyWordComponent from "../hypeify-components/hypeifywordcomponent.js";
-import VisualizationComponent from "./hypeify-software-visualization-demo";
 import { Button, Fade } from "@material-ui/core";
 import { Redirect, Router } from "react-router-dom";
 import landingVideo from "../media/stock-footage-landing.mp4";

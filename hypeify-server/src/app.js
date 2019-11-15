@@ -56,8 +56,8 @@ class activeUser {
   }
 }
 //either localhost or pi ip
-const localip = "192.168.43.14"
-//const localip = "localhost";
+//const localip = "192.168.43.14"
+const localip = "localhost";
 
 var scopes = [
     "user-read-private",
