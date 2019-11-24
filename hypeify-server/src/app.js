@@ -150,11 +150,9 @@ async function visualizeMusic(musicData, startTime) {
 
   if (musicData !== undefined) savedmusicData = musicData.body;
 
-  
-    while (savedmusicData.beats[0].start * 10 < startTime / 100){
-      savedmusicData.beats.shift();
-    }
-  
+  while (savedmusicData.beats[0].start * 10 < startTime / 100) {
+    savedmusicData.beats.shift();
+  }
 
   timer.addEventListener("secondTenthsUpdated", secondTenthsUpdated);
 }
@@ -397,8 +395,7 @@ app.put("/deviceStatus", async (req, res) => {
 });
 
 app.put("/selectSong", async (req, res) => {
-  let activeUser = mapOfActiveUsers.get(req.body.user.socket);
-  if (activeUser.connectedDevice.id == undefined) {
+  if (req.body.user.id == undefined) {
     res.send({
       sucessful: false,
       songInfo: {
@@ -409,14 +406,15 @@ app.put("/selectSong", async (req, res) => {
     });
   }
 
+  let songID = `spotify:track:` + [req.body.songURI];
+
   try {
     await spotifyApi.refreshAccessToken();
 
-    let visualizationData = await getAudioAnalysis(req.body.songURI);
+    let visualizationData = await getAudioAnalysis(songID);
 
     await spotifyApi.play({
-      device_id: activeUser.connectedDevice.id,
-      uris: [req.body.songURI]
+      context_uri: songID
     });
 
     await visualizeMusic(visualizationData, 0);
@@ -477,6 +475,7 @@ app.put("/getPlayListsContents", async (req, res) => {
       playlistTracks.push({
         id: result.body.items[i].track.id,
         name: result.body.items[i].track.name,
+        image: result.body.items[i].video_thumbnail,
         song_durration:
           timeConverter.getUTCMinutes() + ":" + timeConverter.getUTCSeconds()
       });

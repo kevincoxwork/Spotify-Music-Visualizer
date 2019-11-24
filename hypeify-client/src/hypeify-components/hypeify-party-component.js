@@ -63,24 +63,26 @@ export default class PartyComponent extends React.PureComponent {
     currentPos: 0,
     trackLength: 0,
     songPlaying: false,
-    albumArtInfo: {url: "", height: "", width: "" },
-    popUpModel: false
+    albumArtInfo: { url: "", height: "", width: "" },
+    popUpModel: false,
+    chooseSong: false
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
-    //playlistTrackID = "7rlkLjjRjeYYsKhH5eXOL9";
-    let result = await getPlaylistTracks(
-      playlistTrackID,
-      this.state.activeUser
-    );
-    console.log(result);
-      
-    this.setState(result);
+    if (this.state.chooseSong == false) {
+      let result = await getPlaylistTracks(
+        playlistTrackID,
+        this.state.activeUser
+      );
+      this.setState({ chooseSong: true });
+      this.setState(result);
+    } else {
+      let result = await selectSong(playlistTrackID, this.state.deviceInfo);
+    }
   }
 
   async getPlayListsClicked() {
     let result = await getPlayLists();
-    console.log(result);
     this.setState({ userPlayLists: result.userPlayLists, popUpModel: true });
   }
 
@@ -98,6 +100,7 @@ export default class PartyComponent extends React.PureComponent {
 
   async deviceStatusClicked() {
     let result = await getDeviceStatus(this.state.activeUser);
+    console.log(this.state.activeUser);
     this.setState(result);
   }
 
@@ -107,8 +110,11 @@ export default class PartyComponent extends React.PureComponent {
 
   async follow() {
     let results = await followTrack();
-    this.setState({ currentPos: results.progress.time, trackLength: results.progress.duration, albumArtInfo: results.progress.art });
-   
+    this.setState({
+      currentPos: results.progress.time,
+      trackLength: results.progress.duration,
+      albumArtInfo: results.progress.art
+    });
   }
 
   async pausePlayCurrentTrackClicked() {
@@ -170,50 +176,74 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   handleClose = () => {
-    this.setState({popUpModel: false});
+    this.setState({ popUpModel: false, chooseSong: false });
   };
 
-  handlePlayListClicked = (id) => {
+  handlePlayListClicked = id => {
     this.getPlayListsTracksClicked(id);
-  }
+  };
 
   render() {
-    const { anchorEl, setAnchorEl, currentPos, trackLength, popUpModel, userPlayLists  } = this.state;
+    const {
+      anchorEl,
+      setAnchorEl,
+      currentPos,
+      trackLength,
+      popUpModel,
+      userPlayLists
+    } = this.state;
     const open = Boolean(anchorEl);
     return (
       <div className="background">
-        <Dialog open={popUpModel} onClose={this.handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title"> Choose A Song From Playlist</DialogTitle>
-        <DialogContent>
-        <Paper>
-      <Table  >
-        <TableHead>
-          <TableRow>
-            <TableCell>PlayList Name</TableCell>
-            <TableCell align="right">PlayList Art</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {userPlayLists.map(userPlayList => (
-            <TableRow key={userPlayList.id} onClick={this.handlePlayListClicked.bind(this, userPlayList.id)}>
-              <TableCell component="th" scope="row" >
-                {userPlayList.name}
-              </TableCell>
-              <TableCell align="right"  >
-                <img src={userPlayList.image} height="50" width="50" ></img>
-                </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table >
-    </Paper>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClose} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={popUpModel}
+          onClose={this.handleClose}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">
+            {" "}
+            Choose A Song From Playlist
+          </DialogTitle>
+          <DialogContent>
+            <Paper>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>PlayList Name</TableCell>
+                    <TableCell align="right">PlayList Art</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {userPlayLists.map(userPlayList => (
+                    <TableRow
+                      key={userPlayList.id}
+                      onClick={this.handlePlayListClicked.bind(
+                        this,
+                        userPlayList.id
+                      )}
+                    >
+                      <TableCell component="th" scope="row">
+                        {userPlayList.name}
+                      </TableCell>
+                      <TableCell align="right">
+                        <img
+                          src={userPlayList.image}
+                          height="50"
+                          width="50"
+                        ></img>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleClose} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
         <AppBar position="static">
           <Toolbar>
             <IconButton
@@ -244,42 +274,34 @@ export default class PartyComponent extends React.PureComponent {
               onClose={this.handleClose}
             >
               <MenuItem onClick={this.getPlayListsClicked.bind(this)}>
-                <span className="buttonText">
-                  Choose A Song From Playlist
-                </span>
+                <span className="buttonText">Choose A Song From Playlist</span>
               </MenuItem>
               <MenuItem>
-                <span className="buttonText">
-                 About
-                </span>
+                <span className="buttonText">About</span>
               </MenuItem>
             </Menu>
           </Toolbar>
         </AppBar>
-        <div  className="centerWithLine" >
-          
+        <div className="centerWithLine">
           {this.state.deviceInfo === null && (
             <PromptDeviceComponent
               active_user={this.state.activeUser}
               callbackToParent={this.deviceSelected}
             ></PromptDeviceComponent>
           )}
-          <Grid 
+          <Grid
             container
             spacing={2}
             direction="row"
             alignItems="center"
             justify="center"
-            
           >
-            <Grid item xs={0} style={{ width: "80%" }} >
-              <Card   style={{ width: "80%" }} className="center">
+            <Grid item xs={0} style={{ width: "80%" }}>
+              <Card style={{ width: "80%" }} className="center">
                 <CardContent
                   style={{
-                    textAlign: "center",
-                    
+                    textAlign: "center"
                   }}
-                 
                 >
                   {this.state.deviceInfo != undefined && (
                     <div>
@@ -289,92 +311,104 @@ export default class PartyComponent extends React.PureComponent {
                       <p className="buttonText">
                         Device Type: {this.state.deviceInfo.type}
                       </p>
-                      <img className="albumArtImage" src={this.state.albumArtInfo.url} height={this.state.albumArtInfo.height /2 } width={this.state.albumArtInfo.width /2 }></img>
+                      <img
+                        className="albumArtImage"
+                        src={this.state.albumArtInfo.url}
+                        height={this.state.albumArtInfo.height / 2}
+                        width={this.state.albumArtInfo.width / 2}
+                      ></img>
                       <p className="buttonText">
                         {this.state.currentPlayingSong}
                       </p>
                     </div>
                   )}
 
-              <Grid 
-              container
-              spacing={2}
-              direction="row"
-              alignItems="center"
-              justify="center"
-              className="center"
-              style={{margin: "auto"}}
-            >
-            
-              <Grid item xs={0}>
-                <Moment format="m [:] ss" date={currentPos}></Moment>
-              </Grid>
-              <Grid item xs={5} style={{ width: "100%" }}>
-                <Slider
-                  className="sliderStyle"
-                  onChangeCommitted={this.handleSeek}
-                  min={0}
-                  max={trackLength}
-                  value={currentPos}
-                  aria-labelledby="continuous-slider"
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <Moment format="m [:] ss" date={trackLength}></Moment>
-              </Grid>
-            </Grid>
-            <Grid
-              container
-              spacing={3}
-              direction="row"
-              alignItems="center"
-              justify="center"
-              className="center"
-            >
-              <Grid item xs={3} >
-                <div className="spaceButton">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className="playerButtons"
-                    onClick={this.skipCurrentTrackLeftClicked.bind(this)}
+                  <Grid
+                    container
+                    spacing={2}
+                    direction="row"
+                    alignItems="center"
+                    justify="center"
+                    className="center"
+                    style={{ margin: "auto" }}
                   >
-                    <img className="imageResponse" src={BackwardIcon}></img>
-                  </Button>
-                </div>
-              </Grid>
-              <Grid item xs={3}>
-                <div className="spaceButton">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className="playerButtons"
-                    onClick={this.pausePlayCurrentTrackClicked.bind(this)}
-                  > {!this.state.playbackState && ( 
-                    <img className="imageResponse" src={PauseIcon}></img>
-                    )}
-                    {this.state.playbackState && ( 
-                    <img className="imageResponse" src={PlayIcon}></img>
-                    )}
-                  </Button>
-                </div>
-              </Grid>
-              <Grid item xs={3}>
-                <div className="spaceButton">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className="playerButtons"
-                    onClick={this.skipCurrentTrackRightClicked.bind(this)}
+                    <Grid item xs={0}>
+                      <Moment format="m [:] ss" date={currentPos}></Moment>
+                    </Grid>
+                    <Grid item xs={5} style={{ width: "100%" }}>
+                      <Slider
+                        className="sliderStyle"
+                        onChangeCommitted={this.handleSeek}
+                        min={0}
+                        max={trackLength}
+                        value={currentPos}
+                        aria-labelledby="continuous-slider"
+                      />
+                    </Grid>
+                    <Grid item xs={3}>
+                      <Moment format="m [:] ss" date={trackLength}></Moment>
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    container
+                    spacing={3}
+                    direction="row"
+                    alignItems="center"
+                    justify="center"
+                    className="center"
                   >
-                     
-                    <img className="imageResponse" src={FastForwardIcon}></img>
-                     
-                  </Button>
-                </div>
-              </Grid>
-            </Grid>
-
+                    <Grid item xs={3}>
+                      <div className="spaceButton">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className="playerButtons"
+                          onClick={this.skipCurrentTrackLeftClicked.bind(this)}
+                        >
+                          <img
+                            className="imageResponse"
+                            src={BackwardIcon}
+                          ></img>
+                        </Button>
+                      </div>
+                    </Grid>
+                    <Grid item xs={3}>
+                      <div className="spaceButton">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className="playerButtons"
+                          onClick={this.pausePlayCurrentTrackClicked.bind(this)}
+                        >
+                          {" "}
+                          {!this.state.playbackState && (
+                            <img
+                              className="imageResponse"
+                              src={PauseIcon}
+                            ></img>
+                          )}
+                          {this.state.playbackState && (
+                            <img className="imageResponse" src={PlayIcon}></img>
+                          )}
+                        </Button>
+                      </div>
+                    </Grid>
+                    <Grid item xs={3}>
+                      <div className="spaceButton">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className="playerButtons"
+                          onClick={this.skipCurrentTrackRightClicked.bind(this)}
+                        >
+                          <img
+                            className="imageResponse"
+                            src={FastForwardIcon}
+                          ></img>
+                        </Button>
+                      </div>
+                    </Grid>
+                  </Grid>
                 </CardContent>
               </Card>
             </Grid>
