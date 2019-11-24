@@ -82,6 +82,7 @@ export default class PartyComponent extends React.PureComponent {
   }
 
   async getPlayListsClicked() {
+    this.setState({ open: false });
     let result = await getPlayLists();
     this.setState({ userPlayLists: result.userPlayLists, popUpModel: true });
   }
@@ -176,6 +177,7 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   handleClose = () => {
+    this.setState({ open: false });
     this.setState({ popUpModel: false, chooseSong: false });
   };
 
@@ -265,7 +267,6 @@ export default class PartyComponent extends React.PureComponent {
                 vertical: "top",
                 horizontal: "left"
               }}
-              keepMounted
               transformOrigin={{
                 vertical: "top",
                 horizontal: "left"

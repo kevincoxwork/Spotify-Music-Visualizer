@@ -414,6 +414,7 @@ app.put("/selectSong", async (req, res) => {
     let visualizationData = await getAudioAnalysis(songID);
 
     await spotifyApi.play({
+      device_id: [req.body.user.id],
       context_uri: songID
     });
 
@@ -472,10 +473,12 @@ app.put("/getPlayListsContents", async (req, res) => {
     for (let i = 0; i < result.body.items.length; i++) {
       let timeConverter = new Date(result.body.items[i].track.duration_ms);
 
+      console.log(result.body.items[i].video_thumbnail);
+
       playlistTracks.push({
         id: result.body.items[i].track.id,
         name: result.body.items[i].track.name,
-        image: result.body.items[i].video_thumbnail,
+        image: result.body.items[i].video_thumbnail.url,
         song_durration:
           timeConverter.getUTCMinutes() + ":" + timeConverter.getUTCSeconds()
       });
