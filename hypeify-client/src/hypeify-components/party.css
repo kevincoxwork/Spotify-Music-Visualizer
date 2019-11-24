@@ -8,8 +8,6 @@
   flex-grow: 1;
 }
 
-
-
 .sliderStyle {
   display: flex;
   margin-top: 2rem;
@@ -21,11 +19,10 @@
 }
 
 @media only screen and (min-width: 701px) {
-  
   .centerWithLine {
     margin: auto;
     width: 50%;
-    border: 3px solid rgb(63, 81,181);
+    border: 3px solid rgb(63, 81, 181);
     padding: 10px;
   }
   .center {
@@ -33,9 +30,6 @@
     width: 50%;
     padding: 10px;
   }
-  
-
- 
 
   button {
     color: "primary";
@@ -44,10 +38,8 @@
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 20px;
-    color: rgb(63, 81,181);
+    color: rgb(63, 81, 181);
   }
-
-
 
   .headerText {
     font-family: "Comfortaa", cursive;
@@ -67,7 +59,6 @@
     width: 120%;
     padding: 10px 10px 10px 10px;
   }
-
 
   .headerDiv {
     font-family: "Comfortaa", cursive;
@@ -91,14 +82,14 @@
   }
 
   p {
-    color: rgb(63, 81,181);
+    color: rgb(63, 81, 181);
   }
 }
 @media only screen and (max-width: 700px) {
   .centerWithLine {
     margin: auto;
-    width: 50%;
-    border: 3px solid rgb(63, 81,181);
+    width: 90%;
+    border: 3px solid rgb(63, 81, 181);
     padding: 10px;
   }
   .center {
@@ -107,15 +98,15 @@
     padding: 10px;
   }
 
-  .albumArtImage{
+  .albumArtImage {
     height: 100%;
     width: 100%;
   }
   p {
     font-size: xx-small;
-    
+
     padding-left: 5px;
-    color: rgb(63, 81,181);
+    color: rgb(63, 81, 181);
   }
   .headerText {
     font-size: 12px;
@@ -124,7 +115,7 @@
   .buttonText {
     font-family: "Comfortaa", cursive;
     font-size: 10px;
-    color: rgb(63, 81,181);
+    color: rgb(63, 81, 181);
   }
   .playerButtons {
     width: 50%;
@@ -134,14 +125,11 @@
     width: 15px;
     height: 15px;
   }
-  time{
+  time {
     font-size: xx-small;
   }
-  
- 
+
   .MuiButton-root {
     min-width: 0px !important;
   }
-  
 }
-

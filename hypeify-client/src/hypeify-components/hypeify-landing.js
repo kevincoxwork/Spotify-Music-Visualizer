@@ -41,7 +41,9 @@ export default class LandingComponent extends React.PureComponent {
                 variant="contained"
                 color="primary"
               >
-                <span className="buttonText">Log In!</span>
+                <span className="buttonText" style={{ color: "white" }}>
+                  Log In!
+                </span>
               </Button>
             </div>
           </Fade>

@@ -65,7 +65,11 @@ export default class PartyComponent extends React.PureComponent {
     songPlaying: false,
     albumArtInfo: { url: "", height: "", width: "" },
     popUpModel: false,
-    chooseSong: false
+    chooseSong: false,
+    songOrList: false,
+    menuOpen: false,
+    artText: "PlayList Art",
+    albumText: "PlayList Name"
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
@@ -74,7 +78,11 @@ export default class PartyComponent extends React.PureComponent {
         playlistTrackID,
         this.state.activeUser
       );
-      this.setState({ chooseSong: true });
+      this.setState({
+        chooseSong: true,
+        artText: "Song Art",
+        albumText: "Song Name"
+      });
       this.setState(result);
     } else {
       let result = await selectSong(playlistTrackID, this.state.deviceInfo);
@@ -82,7 +90,7 @@ export default class PartyComponent extends React.PureComponent {
   }
 
   async getPlayListsClicked() {
-    this.setState({ open: false });
+    this.setState({ menuOpen: false });
     let result = await getPlayLists();
     this.setState({ userPlayLists: result.userPlayLists, popUpModel: true });
   }
@@ -101,7 +109,7 @@ export default class PartyComponent extends React.PureComponent {
 
   async deviceStatusClicked() {
     let result = await getDeviceStatus(this.state.activeUser);
-    console.log(this.state.activeUser);
+
     this.setState(result);
   }
 
@@ -166,6 +174,7 @@ export default class PartyComponent extends React.PureComponent {
 
   handleMenu = event => {
     this.setState({ anchorEl: event.currentTarget });
+    this.setState({ menuOpen: true });
   };
 
   handleSeek = (event, newValue) => {
@@ -174,6 +183,7 @@ export default class PartyComponent extends React.PureComponent {
 
   handleClose = () => {
     this.setState({ anchorEl: null });
+    this.setState({ menuOpen: false });
   };
 
   handleClose = () => {
@@ -182,7 +192,12 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   handlePlayListClicked = id => {
+    this.setState({ songOrList: true });
     this.getPlayListsTracksClicked(id);
+  };
+
+  handleMenuClose = () => {
+    this.setState({ anchorEl: false });
   };
 
   render() {
@@ -192,7 +207,10 @@ export default class PartyComponent extends React.PureComponent {
       currentPos,
       trackLength,
       popUpModel,
-      userPlayLists
+      userPlayLists,
+      menuOpen,
+      artText,
+      albumText
     } = this.state;
     const open = Boolean(anchorEl);
     return (
@@ -211,8 +229,8 @@ export default class PartyComponent extends React.PureComponent {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>PlayList Name</TableCell>
-                    <TableCell align="right">PlayList Art</TableCell>
+                    <TableCell>{albumText}</TableCell>
+                    <TableCell align="right">{artText}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -253,6 +271,7 @@ export default class PartyComponent extends React.PureComponent {
               className="menuButton"
               color="inherit"
               aria-label="menu"
+              open={menuOpen}
               onClick={this.handleMenu}
             >
               <MenuIcon />
@@ -271,14 +290,11 @@ export default class PartyComponent extends React.PureComponent {
                 vertical: "top",
                 horizontal: "left"
               }}
-              open={open}
+              open={menuOpen}
               onClose={this.handleClose}
             >
               <MenuItem onClick={this.getPlayListsClicked.bind(this)}>
                 <span className="buttonText">Choose A Song From Playlist</span>
-              </MenuItem>
-              <MenuItem>
-                <span className="buttonText">About</span>
               </MenuItem>
             </Menu>
           </Toolbar>
