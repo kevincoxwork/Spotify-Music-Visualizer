@@ -77,6 +77,7 @@ export default class PartyComponent extends React.PureComponent {
       this.setState({ chooseSong: true });
       this.setState(result);
     } else {
+      console.log(this.state.userPlayLists);
       let result = await selectSong(playlistTrackID, this.state.deviceInfo);
     }
   }
@@ -100,7 +101,7 @@ export default class PartyComponent extends React.PureComponent {
 
   async deviceStatusClicked() {
     let result = await getDeviceStatus(this.state.activeUser);
-    console.log(this.state.activeUser);
+
     this.setState(result);
   }
 

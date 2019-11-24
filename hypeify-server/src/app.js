@@ -233,6 +233,7 @@ app.put("/spotifyDeviceInfo", async (req, res) => {
     await spotifyApi.refreshAccessToken();
     let myDevices = await spotifyApi.getMyDevices();
     activeUser.connectedDevice = myDevices.body.devices[0];
+    
     mapOfActiveUsers.set(req.body.socket, activeUser);
     res.send(myDevices.body.devices);
   } catch (exception) {
@@ -395,26 +396,17 @@ app.put("/deviceStatus", async (req, res) => {
 });
 
 app.put("/selectSong", async (req, res) => {
-  if (req.body.user.id == undefined) {
-    res.send({
-      sucessful: false,
-      songInfo: {
-        id: undefined,
-        name: undefined,
-        uri: undefined
-      }
-    });
-  }
-
-  let songID = `spotify:track:` + [req.body.songURI];
-
+  let songID = `spotify:track:` + req.body.songURI;
+ 
   try {
     await spotifyApi.refreshAccessToken();
 
     let visualizationData = await getAudioAnalysis(songID);
-
+    let songs = [];
+    songs[0] = songID;
     await spotifyApi.play({
-      context_uri: songID
+      device_id: req.body.device_info.id,
+      uris: songs
     });
 
     await visualizeMusic(visualizationData, 0);
@@ -469,13 +461,14 @@ app.put("/getPlayListsContents", async (req, res) => {
     //improve the responce object for ease on the fron-end
     //create a more structed object for the frontend
     let playlistTracks = [];
+    console.log(result.body.items[0].track);
     for (let i = 0; i < result.body.items.length; i++) {
       let timeConverter = new Date(result.body.items[i].track.duration_ms);
 
       playlistTracks.push({
         id: result.body.items[i].track.id,
         name: result.body.items[i].track.name,
-        image: result.body.items[i].video_thumbnail,
+        image: result.body.items[i].track.album.images[0].url,
         song_durration:
           timeConverter.getUTCMinutes() + ":" + timeConverter.getUTCSeconds()
       });

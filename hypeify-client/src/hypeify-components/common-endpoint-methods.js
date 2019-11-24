@@ -118,7 +118,8 @@ module.exports.resumeCurrentTrack = async function resumeCurrentTrack(
   }
 };
 
-module.exports.selectSong = async function selectSong(songID, activeUser) {
+module.exports.selectSong = async function selectSong(songID, deviceInfo) {
+ 
   let responce = await fetch(urls.SPOTSELECTSONG, {
     method: "PUT",
     headers: {
@@ -127,7 +128,7 @@ module.exports.selectSong = async function selectSong(songID, activeUser) {
     },
     body: JSON.stringify({
       songURI: songID,
-      user: activeUser
+      device_info: deviceInfo
     })
   });
   let finishedResponce = await responce.json();
