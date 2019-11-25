@@ -1,11 +1,8 @@
 import React from "react";
-import { Spring, useSpring, animated } from "react-spring";
 import { Button, Fade } from "@material-ui/core";
-import { Redirect, Router } from "react-router-dom";
 import landingVideo from "../media/stock-footage-landing.mp4";
 import Cover from "react-video-cover";
 import "./landing.css";
-import { fontSize } from "@material-ui/system";
 
 const urls = require("./urls");
 

@@ -1,9 +1,8 @@
 import React from "react";
 import io from "socket.io-client";
-import { songTrack, activeUser } from "./common-classes";
+import { activeUser } from "./common-classes";
 import "./party.css";
 
-const request = require("request");
 const queue = require("queue");
 const urls = require("./urls");
 
@@ -82,7 +81,7 @@ export default class JoinComponent extends React.PureComponent {
             {this.state.activeUser.access_token}
           </p>
         </div>
-        {this.state.deviceInfo != undefined && (
+        {this.state.deviceInfo !== undefined && (
           <div>
             <p>Device Name: {this.state.deviceInfo[0].name}</p>
             <p>Device Type: {this.state.deviceInfo[0].type}</p>

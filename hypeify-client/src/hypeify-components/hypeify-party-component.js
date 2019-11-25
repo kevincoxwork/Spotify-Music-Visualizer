@@ -1,6 +1,6 @@
 import React from "react";
 import io from "socket.io-client";
-import { songTrack, activeUser } from "./common-classes";
+import { activeUser } from "./common-classes";
 import PlayIcon from "../pause.png";
 import PauseIcon from "../play.png";
 import FastForwardIcon from "../fastforwardicon.png";
@@ -20,7 +20,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   Table,
   TableBody,
@@ -32,7 +31,6 @@ import {
 import MenuIcon from "@material-ui/icons/Menu";
 import Moment from "react-moment";
 import "./party.css";
-import { textAlign } from "@material-ui/system";
 import PromptDeviceComponent from "./prompt-device-component";
 import {
   getPlayLists,
@@ -56,7 +54,7 @@ export default class PartyComponent extends React.PureComponent {
     deviceInfo: null,
     queue: new queue(),
     currentPlayingSong: "",
-    userPlayLists: new Array(),
+    userPlayLists: [],
     playbackState: false,
     buttonTitle: "",
     anchorEl: null,
@@ -73,7 +71,7 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   async getPlayListsTracksClicked(playlistTrackID) {
-    if (this.state.chooseSong == false) {
+    if (this.state.chooseSong === false) {
       let result = await getPlaylistTracks(
         playlistTrackID,
         this.state.activeUser
@@ -101,13 +99,13 @@ export default class PartyComponent extends React.PureComponent {
   }
 
   async skipCurrentTrackLeftClicked() {
-    let result = await skipCurrentTrack(false, this.state.activeUser);
+    await skipCurrentTrack(false, this.state.activeUser);
     let status = await getDeviceStatus(this.state.activeUser);
     this.setState(status);
   }
 
   async skipCurrentTrackRightClicked() {
-    let result = await skipCurrentTrack(true, this.state.activeUser);
+    await skipCurrentTrack(true, this.state.activeUser);
     let status = await getDeviceStatus(this.state.activeUser);
     this.setState(status);
   }
@@ -205,7 +203,6 @@ export default class PartyComponent extends React.PureComponent {
   render() {
     const {
       anchorEl,
-      setAnchorEl,
       currentPos,
       trackLength,
       popUpModel,
@@ -214,7 +211,6 @@ export default class PartyComponent extends React.PureComponent {
       artText,
       albumText
     } = this.state;
-    const open = Boolean(anchorEl);
     return (
       <div className="background">
         <Dialog
@@ -251,6 +247,7 @@ export default class PartyComponent extends React.PureComponent {
                         <img
                           src={userPlayList.image}
                           height="50"
+                          alt="playlist album art"
                           width="50"
                         ></img>
                       </TableCell>
@@ -322,7 +319,7 @@ export default class PartyComponent extends React.PureComponent {
                     textAlign: "center"
                   }}
                 >
-                  {this.state.deviceInfo != undefined && (
+                  {this.state.deviceInfo !== undefined && (
                     <div>
                       <p className="buttonText">
                         Device Name: {this.state.deviceInfo.name}
@@ -335,6 +332,7 @@ export default class PartyComponent extends React.PureComponent {
                         src={this.state.albumArtInfo.url}
                         height={this.state.albumArtInfo.height / 2}
                         width={this.state.albumArtInfo.width / 2}
+                        alt="album art img"
                       ></img>
                       <p className="buttonText">
                         {this.state.currentPlayingSong}
@@ -386,6 +384,7 @@ export default class PartyComponent extends React.PureComponent {
                         >
                           <img
                             className="imageResponse"
+                            alt="skip left button"
                             src={BackwardIcon}
                           ></img>
                         </Button>
@@ -403,11 +402,16 @@ export default class PartyComponent extends React.PureComponent {
                           {!this.state.playbackState && (
                             <img
                               className="imageResponse"
+                              alt="pause button"
                               src={PauseIcon}
                             ></img>
                           )}
                           {this.state.playbackState && (
-                            <img className="imageResponse" src={PlayIcon}></img>
+                            <img
+                              className="imageResponse"
+                              alt="play button"
+                              src={PlayIcon}
+                            ></img>
                           )}
                         </Button>
                       </div>
@@ -422,6 +426,7 @@ export default class PartyComponent extends React.PureComponent {
                         >
                           <img
                             className="imageResponse"
+                            alt="right skip button"
                             src={FastForwardIcon}
                           ></img>
                         </Button>

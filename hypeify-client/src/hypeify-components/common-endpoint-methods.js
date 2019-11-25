@@ -51,6 +51,7 @@ module.exports.seekTrack = async function seekTrack(newTime) {
     body: JSON.stringify({ seekTime: newTime })
   });
   let finishedResponse = await reponse.json();
+  return finishedResponse;
 };
 
 module.exports.followTrack = async function followTrack() {
@@ -119,7 +120,6 @@ module.exports.resumeCurrentTrack = async function resumeCurrentTrack(
 };
 
 module.exports.selectSong = async function selectSong(songID, deviceInfo) {
- 
   let responce = await fetch(urls.SPOTSELECTSONG, {
     method: "PUT",
     headers: {

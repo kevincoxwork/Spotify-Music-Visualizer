@@ -1,22 +1,19 @@
 import React from "react";
 import "./landing.css";
-import { songTrack, activeUser } from "./common-classes";
+import { activeUser } from "./common-classes";
 import { getSpotifyDevices } from "./common-endpoint-methods";
 import {
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Paper,
-  Grid,
-  Icon
+  Grid
 } from "@material-ui/core";
 import ComputerIcon from "@material-ui/icons/Computer";
 import PhoneAndroidIcon from "@material-ui/icons/PhoneAndroid";
 import "../hypeify-components/party.css";
-const urls = require("./urls");
 
 export default class PromptDeviceComponent extends React.PureComponent {
   state = {
