@@ -86,13 +86,18 @@ export default class PartyComponent extends React.PureComponent {
       this.setState(result);
     } else {
       let result = await selectSong(playlistTrackID, this.state.deviceInfo);
+      this.handleClose();
+      this.setState(result);
     }
   }
 
   async getPlayListsClicked() {
-    this.setState({ menuOpen: false });
     let result = await getPlayLists();
-    this.setState({ userPlayLists: result.userPlayLists, popUpModel: true });
+    this.setState({
+      userPlayLists: result.userPlayLists,
+      popUpModel: true,
+      menuOpen: false
+    });
   }
 
   async skipCurrentTrackLeftClicked() {
@@ -173,8 +178,7 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   handleMenu = event => {
-    this.setState({ anchorEl: event.currentTarget });
-    this.setState({ menuOpen: true });
+    this.setState({ anchorEl: event.currentTarget, menuOpen: true });
   };
 
   handleSeek = (event, newValue) => {
@@ -182,18 +186,16 @@ export default class PartyComponent extends React.PureComponent {
   };
 
   handleClose = () => {
-    this.setState({ anchorEl: null });
-    this.setState({ menuOpen: false });
+    this.setState({ anchorEl: null, menuOpen: false });
   };
 
   handleClose = () => {
-    this.setState({ open: false });
-    this.setState({ popUpModel: false, chooseSong: false });
+    this.setState({ popUpModel: false, chooseSong: false, menuOpen: false });
   };
 
   handlePlayListClicked = id => {
-    this.setState({ songOrList: true });
     this.getPlayListsTracksClicked(id);
+    this.setState({ songOrList: true });
   };
 
   handleMenuClose = () => {
