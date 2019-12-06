@@ -55,7 +55,7 @@ export default class JoinComponent extends React.PureComponent {
 
   componentDidMount = () => {
     // connect to server
-    const socket = io.connect("http://localhost:2500");
+    const socket = io.connect("http://192.168.43.14:2500");
 
     socket.on("connectedSuccessfully", this.connectedSuccessfully);
     this.setState({ socket: socket });

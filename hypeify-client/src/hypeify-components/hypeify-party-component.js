@@ -319,7 +319,7 @@ export default class PartyComponent extends React.PureComponent {
                     textAlign: "center"
                   }}
                 >
-                  {this.state.deviceInfo !== undefined && (
+                  {this.state.deviceInfo !== null && (
                     <div>
                       <p className="buttonText">
                         Device Name: {this.state.deviceInfo.name}
