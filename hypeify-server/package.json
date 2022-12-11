@@ -21,7 +21,7 @@
     "cors": "^2.8.5",
     "easytimer": "^1.1.1",
     "easytimer.js": "^4.0.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "mongodb": "^3.3.3",
     "react": "^16.11.0",
     "request": "^2.88.0",
